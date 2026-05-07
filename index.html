@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>DÄSHO app</title>
+    <link rel="stylesheet" href="src/style.css?v=41" />
+    <link rel="manifest" href="manifest.json" />
+    <!-- Favicon — inline SVG, не требует отдельного файла -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230e1120'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='ui-rounded,system-ui,sans-serif' font-size='34' font-weight='900' fill='%23ffd966'%3ED%3C/text%3E%3C/svg%3E" />
+    <!-- Web app manifest для iPad/Android (mobile + apple — оба для совместимости) -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="DÄSHO" />
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.165/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165/examples/jsm/"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <!-- Заставка при старте: ~2 сек, потом плавно тает -->
+    <div id="splash" aria-hidden="true">
+      <img class="logo-img" src="dasho-logo.png" alt="DÄSHO"
+           onerror="this.classList.add('fail')" />
+      <div class="logo-fallback">DÄSHO</div>
+      <div class="tagline">START DÄSHO TOUCH</div>
+    </div>
+
+    <!-- Финальный коллаж — рисуется поверх дотс-фона, под нодами -->
+    <canvas id="stage"></canvas>
+
+    <!-- Дотс-фон холста: SVG-pattern, масштабируется вместе со сценой -->
+    <div id="dots-bg" aria-hidden="true"></div>
+
+    <!-- Слой холста, по которому ездят ноды. Pan/zoom — на нём. -->
+    <div id="dock">
+      <svg id="wires" xmlns="http://www.w3.org/2000/svg"></svg>
+      <!-- Сюда main.js монтирует все ноды -->
+    </div>
+
+    <!-- Верхняя панель — две группы (слева/справа) с равными промежутками -->
+    <div class="header-left">
+      <button id="palette-btn" type="button">+ Добавить ноду</button>
+      <button id="templates-btn" type="button" title="Готовые шоу — стартовые сцены">📚 Шоу</button>
+      <button id="cookbook-add-btn" type="button" title="Добавить текущий граф в твой Cookbook">📌</button>
+      <button id="rec-btn" type="button" title="Запись финального видео в WebM">●REC</button>
+      <button id="share-btn" type="button" title="Скопировать ссылку — отправь и шоу откроется у получателя">🔗 Поделиться</button>
+      <div id="master-fade-wrap" title="Master Fade — всё в чёрный для перехода между шоу">
+        <span class="lab">FADE</span>
+        <input id="master-fade" type="range" min="0" max="1" step="0.01" value="0">
+      </div>
+      <button id="clear-all-btn" type="button">Очистить</button>
+    </div>
+    <div class="header-right">
+      <a id="lang-btn" href="index_en.html" title="Switch to English">EN</a>
+      <select id="fps-select" title="Целевой fps">
+        <option value="auto">fps: авто</option>
+        <option value="120">fps: 120</option>
+        <option value="60">fps: 60</option>
+        <option value="30">fps: 30</option>
+      </select>
+      <button id="fullscreen-btn" type="button" title="На весь экран">⛶</button>
+    </div>
+    <!-- Лого — самостоятельно, в самом правом верхнем углу -->
+    <div id="brand" class="brand">DÄSHO</div>
+
+    <!-- Палитра нод: появляется по клику. Содержимое формируется из palette.js -->
+    <div id="palette" hidden></div>
+
+    <!-- Тост: всплывающее уведомление снизу по центру -->
+    <div id="toast"></div>
+
+    <!-- ── ВИЗУАЛЬНЫЕ ЭЛЕМЕНТЫ ИЗ ПРОТОТИПА (без активной логики) ── -->
+
+    <!-- Сцены — нижняя плашка 1-9 -->
+    <div id="scene-bar" role="toolbar" aria-label="Сцены">
+      <span class="lab">Сцены</span>
+      <button class="slot" type="button" data-i="1">1<span class="slot-x" title="Очистить">×</span></button>
+      <button class="slot" type="button" data-i="2">2<span class="slot-x" title="Очистить">×</span></button>
+      <button class="slot" type="button" data-i="3">3<span class="slot-x" title="Очистить">×</span></button>
+      <button class="slot" type="button" data-i="4">4<span class="slot-x" title="Очистить">×</span></button>
+      <button class="slot" type="button" data-i="5">5<span class="slot-x" title="Очистить">×</span></button>
+      <button class="slot" type="button" data-i="6">6<span class="slot-x" title="Очистить">×</span></button>
+      <button class="slot" type="button" data-i="7">7<span class="slot-x" title="Очистить">×</span></button>
+      <button class="slot" type="button" data-i="8">8<span class="slot-x" title="Очистить">×</span></button>
+      <button class="slot" type="button" data-i="9">9<span class="slot-x" title="Очистить">×</span></button>
+      <button class="slots-clear" type="button" title="Очистить все сцены">🗑</button>
+    </div>
+
+    <!-- History-bar (undo/redo/save) — пока визуал, кнопки disabled -->
+    <div id="history-bar" aria-label="История">
+      <button id="undo-btn" type="button" disabled title="Cmd+Z (скоро)">↶</button>
+      <span class="pos" id="hist-pos">—</span>
+      <button id="redo-btn" type="button" disabled title="Cmd+Shift+Z (скоро)">↷</button>
+      <span class="sep"></span>
+      <button id="save-btn" type="button" disabled title="Cmd+S (скоро)">💾</button>
+      <span class="sep"></span>
+      <button id="recover-btn" type="button" title="Восстановить последнее автосохранение" hidden>↩</button>
+    </div>
+
+    <!-- Подсказка по управлению -->
+    <div id="hint">
+      <span>колесо/2 пальца ↕ — масштаб · 2 пальца ←→ — сдвиг · drag по пустому — сдвиг</span>
+    </div>
+
+    <!-- Статус-бар: показывает активные ноды и FPS -->
+    <div id="statusbar">
+      <span id="status-fps">— fps</span>
+      <span id="status-nodes">— нод</span>
+      <span id="status-wires">— проводов</span>
+      <span id="status-list"></span>
+    </div>
+
+    <script type="module" src="src/main.js?v=104"></script>
+    <script>
+      // Заставка: ждёт клика. Если 6 сек никто не нажал — закроется сама.
+      (function () {
+        const close = () => {
+          const s = document.getElementById('splash');
+          if (!s || s.classList.contains('fading')) return;
+          s.classList.add('fading');
+          setTimeout(() => s && s.remove(), 700);
+        };
+        window.addEventListener('load', () => {
+          const s = document.getElementById('splash');
+          if (!s) return;
+          s.addEventListener('click', close);
+          // Авто-fallback на случай если пользователь не нажал
+          setTimeout(close, 6000);
+        });
+      })();
+    </script>
+  </body>
+</html>

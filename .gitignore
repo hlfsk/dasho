@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+._*
+
+# Node (если когда-то добавится package.json)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Логи / временное
+*.log
+.cache/
+.tmp/
+tmp/
+
+# Cloudflare Worker (после wrangler login)
+share-server/.dev.vars
+share-server/wrangler.lock
+share-server/.wrangler/
+
+# Локальные API-ключи / секреты
+.env
+.env.local
+*.local
+
+# Записи REC (большие, не нужны в репо)
+recordings/
+*.webm

@@ -1,0 +1,130 @@
+<!doctype html>
+<!--
+  index_en.html — English mirror of index.html for screenshots / pitch decks.
+  Detection of language is by file name (see src/i18n.js).
+  The Russian version (index.html) stays untouched.
+
+  This file ONLY translates the chrome (header, splash, scene-bar, status-bar,
+  search, modal headers). Node titles / parameter labels remain in Russian
+  for now — that's a bigger translation pass for later.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>DÄSHO app</title>
+    <link rel="stylesheet" href="src/style.css?v=41" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230e1120'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='ui-rounded,system-ui,sans-serif' font-size='34' font-weight='900' fill='%23ffd966'%3ED%3C/text%3E%3C/svg%3E" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="DÄSHO" />
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.165/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165/examples/jsm/"
+      }
+    }
+    </script>
+  </head>
+  <body>
+    <div id="splash" aria-hidden="true">
+      <img class="logo-img" src="dasho-logo.png" alt="DÄSHO"
+           onerror="this.classList.add('fail')" />
+      <div class="logo-fallback">DÄSHO</div>
+      <div class="tagline">START DÄSHO TOUCH</div>
+    </div>
+
+    <canvas id="stage"></canvas>
+    <div id="dots-bg" aria-hidden="true"></div>
+
+    <div id="dock">
+      <svg id="wires" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <!-- Top bar — left & right groups, equal gaps -->
+    <div class="header-left">
+      <button id="palette-btn" type="button">+ Add node</button>
+      <button id="templates-btn" type="button" title="Ready-made shows — starter scenes">📚 Shows</button>
+      <button id="cookbook-add-btn" type="button" title="Save current graph to your Cookbook">📌</button>
+      <button id="rec-btn" type="button" title="Record final video as WebM">●REC</button>
+      <button id="share-btn" type="button" title="Copy link — sender opens the show as is">🔗 Share</button>
+      <div id="master-fade-wrap" title="Master Fade — fade-to-black for transitions between shows">
+        <span class="lab">FADE</span>
+        <input id="master-fade" type="range" min="0" max="1" step="0.01" value="0">
+      </div>
+      <button id="clear-all-btn" type="button">Clear</button>
+    </div>
+    <div class="header-right">
+      <a id="lang-btn" href="index.html" title="Переключить на русский">RU</a>
+      <select id="fps-select" title="Target fps">
+        <option value="auto">fps: auto</option>
+        <option value="120">fps: 120</option>
+        <option value="60">fps: 60</option>
+        <option value="30">fps: 30</option>
+      </select>
+      <button id="fullscreen-btn" type="button" title="Fullscreen">⛶</button>
+    </div>
+    <div id="brand" class="brand">DÄSHO</div>
+
+    <div id="palette" hidden></div>
+    <div id="toast"></div>
+
+    <!-- Scene slots 1-9 -->
+    <div id="scene-bar" role="toolbar" aria-label="Scenes">
+      <span class="lab">Scenes</span>
+      <button class="slot" type="button" data-i="1">1<span class="slot-x" title="Clear">×</span></button>
+      <button class="slot" type="button" data-i="2">2<span class="slot-x" title="Clear">×</span></button>
+      <button class="slot" type="button" data-i="3">3<span class="slot-x" title="Clear">×</span></button>
+      <button class="slot" type="button" data-i="4">4<span class="slot-x" title="Clear">×</span></button>
+      <button class="slot" type="button" data-i="5">5<span class="slot-x" title="Clear">×</span></button>
+      <button class="slot" type="button" data-i="6">6<span class="slot-x" title="Clear">×</span></button>
+      <button class="slot" type="button" data-i="7">7<span class="slot-x" title="Clear">×</span></button>
+      <button class="slot" type="button" data-i="8">8<span class="slot-x" title="Clear">×</span></button>
+      <button class="slot" type="button" data-i="9">9<span class="slot-x" title="Clear">×</span></button>
+      <button class="slots-clear" type="button" title="Clear all scenes">🗑</button>
+    </div>
+
+    <!-- History-bar -->
+    <div id="history-bar" aria-label="History">
+      <button id="undo-btn" type="button" disabled title="Cmd+Z (soon)">↶</button>
+      <span class="pos" id="hist-pos">—</span>
+      <button id="redo-btn" type="button" disabled title="Cmd+Shift+Z (soon)">↷</button>
+      <span class="sep"></span>
+      <button id="save-btn" type="button" disabled title="Cmd+S (soon)">💾</button>
+      <span class="sep"></span>
+      <button id="recover-btn" type="button" title="Restore the latest auto-save" hidden>↩</button>
+    </div>
+
+    <div id="hint">
+      <span>wheel / 2 fingers ↕ — zoom · 2 fingers ←→ — pan · drag on empty area — pan</span>
+    </div>
+
+    <div id="statusbar">
+      <span id="status-fps">— fps</span>
+      <span id="status-nodes">— nodes</span>
+      <span id="status-wires">— wires</span>
+      <span id="status-list"></span>
+    </div>
+
+    <script type="module" src="src/main.js?v=104"></script>
+    <script>
+      (function () {
+        const close = () => {
+          const s = document.getElementById('splash');
+          if (!s || s.classList.contains('fading')) return;
+          s.classList.add('fading');
+          setTimeout(() => s && s.remove(), 700);
+        };
+        window.addEventListener('load', () => {
+          const s = document.getElementById('splash');
+          if (!s) return;
+          s.addEventListener('click', close);
+          setTimeout(close, 6000);
+        });
+      })();
+    </script>
+  </body>
+</html>
