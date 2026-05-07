@@ -2412,10 +2412,15 @@ requestAnimationFrame(rafLoop);
 // тики в скрытой вкладке (setInterval/setTimeout drosselируются до 1/сек).
 // Это нужно когда пользователь выводит финальный коллаж на проектор fullscreen
 // и оставляет основной браузер свёрнутым.
+//
+// Уважаем целевой fps: если RAF уже отрисовал недавно — fallback не вмешивается.
+// Активная вкладка → RAF делает свою работу, fallback почти всегда пропускает.
+// Свёрнутая вкладка → RAF замораживается, fallback берёт управление.
 {
   const ch = new MessageChannel();
   ch.port1.onmessage = () => {
-    if (performance.now() - _lastTickAt > 30) tickFrame();
+    const minMs = _targetFps > 0 ? (1000 / _targetFps - 1) : 16;
+    if (performance.now() - _lastTickAt > minMs) tickFrame();
     ch.port2.postMessage(0);
   };
   ch.port2.postMessage(0);
