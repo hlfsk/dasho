@@ -2419,6 +2419,13 @@ requestAnimationFrame(rafLoop);
 {
   const ch = new MessageChannel();
   ch.port1.onmessage = () => {
+    // В активной (видимой) вкладке RAF справляется сам и уважает fps —
+    // fallback не должен рисовать параллельно (иначе суммарно 2x кадров).
+    // Активируется только когда вкладка скрыта.
+    if (document.visibilityState !== 'hidden') {
+      ch.port2.postMessage(0);
+      return;
+    }
     const minMs = _targetFps > 0 ? (1000 / _targetFps - 1) : 16;
     if (performance.now() - _lastTickAt > minMs) tickFrame();
     ch.port2.postMessage(0);
