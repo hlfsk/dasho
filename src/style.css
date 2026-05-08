@@ -242,6 +242,135 @@ button:active { transform: translateY(0); }
   #master-fade { width: 48px; }
 }
 
+/* ── 📱 Mobile portrait — красивая чистая раскладка для скриншотов ──────── */
+@media (max-width: 540px) {
+  /* Лого — герой сверху по центру, крупное, без поворота */
+  #brand {
+    position: fixed;
+    top: 0.7rem;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) rotate(-3deg);
+    font-size: 1.1rem;
+    padding: 0.5rem 1.1rem;
+    box-shadow:
+      0 4px 24px rgba(254, 239, 51, 0.35),
+      0 0 0 4px rgba(254, 239, 51, 0.08);
+    z-index: 51;
+  }
+  #brand::before { content: none; }
+  #brand { font-size: 1.1rem !important; padding: 0.5rem 1.1rem !important; }
+
+  /* Шапка — пилюля внизу, всё компактно */
+  .header-left {
+    top: auto;
+    bottom: calc(0.7rem + env(safe-area-inset-bottom, 0px));
+    left: 0.7rem;
+    right: 0.7rem;
+    flex-wrap: nowrap;
+    justify-content: center;
+    z-index: 51;
+  }
+  /* Из шапки видны только палитра + шоу — компактная пилюля */
+  .header-left #cookbook-add-btn,
+  .header-left #rec-btn,
+  .header-left #share-btn,
+  .header-left #master-fade-wrap,
+  .header-left #clear-all-btn { display: none; }
+  /* Header-right (fps + fullscreen) — приклеить под лого справа сверху, FPS убрать */
+  .header-right {
+    top: 0.7rem;
+    right: 0.7rem;
+    bottom: auto;
+    left: auto;
+    z-index: 51;
+    background: transparent;
+  }
+  .header-right #fps-select,
+  .header-right #lang-btn { display: none; }
+  .header-right #fullscreen-btn {
+    width: 2.4rem;
+    height: 2.4rem;
+    font-size: 1rem;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Палитра становится bottom-sheet — Apple-style модалка снизу */
+  #palette {
+    top: auto !important;
+    bottom: calc(4rem + env(safe-area-inset-bottom, 0px)) !important;
+    left: 0.5rem !important;
+    right: 0.5rem !important;
+    width: auto !important;
+    max-height: 60vh;
+    border-radius: 18px 18px 14px 14px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.55);
+  }
+  #palette::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+    margin: 0.3rem auto 0.6rem;
+  }
+
+  /* Палитра-кнопка — крупная и красивая */
+  #palette-btn {
+    font-size: 0.9rem;
+    padding: 0.7rem 1rem;
+    background: var(--yellow);
+    color: #000;
+    box-shadow: 0 4px 18px rgba(254, 239, 51, 0.35);
+    border-radius: 999px;
+    font-weight: 700;
+  }
+  /* Кнопка 📚 Шоу — компактная */
+  .header-left #templates-btn {
+    font-size: 0.85rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: 999px;
+  }
+  /* В нижней «шапке» — палитра + шоу в красивой пилюле */
+  .header-left {
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    padding: 0.3rem 0.5rem;
+    gap: 0.4rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Scene-bar — над bottom-шапкой */
+  #scene-bar {
+    bottom: calc(4.2rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.3rem 0.5rem;
+    border-radius: 14px;
+  }
+
+  /* Скрываем «технический» UI — нужен для работы, мешает для скриншотов */
+  #hint, #statusbar, #scene-bar, #history-bar { display: none; }
+
+  /* Feedback-кнопка — наверх справа от лого, чтобы не мешать */
+  #feedback-btn {
+    top: 0.85rem;
+    bottom: auto;
+    left: 0.7rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    font-size: 1rem;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
 /* iPad: учитываем home indicator снизу — scene-bar 1-9 не должен быть под жестом */
 @supports (padding: max(0px)) {
   #scene-bar {
