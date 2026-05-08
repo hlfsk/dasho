@@ -249,53 +249,58 @@ button:active { transform: translateY(0); }
    Bottom-row plot:   📚 ● 🗑 [fps] [🔗]
    Сцены, cookbook, импорт/экспорт скрыты. */
 @media (max-width: 600px) {
-  /* Скрываем всё лишнее */
-  #hint, #statusbar, #cookbook-add-btn, #scene-bar { display: none !important; }
+  /* Скрываем всё лишнее. Блокнот (📝 фидбек) тоже скрыт по запросу. */
+  #hint, #statusbar, #cookbook-add-btn, #scene-bar, #feedback-btn { display: none !important; }
   /* Прячем кнопки импорта/экспорта сцены если есть в DOM */
   #scene-import-btn, #scene-export-btn { display: none !important; }
 
-  /* Все три верхних элемента — на одном уровне, отступ от Safari URL bar.
-     env(safe-area-inset-top) = 0 в Safari (URL bar скрывает свой регион),
-     поэтому ставим жёсткие 1rem чтобы было точно видно под адресной строкой. */
-  --top-row: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.4rem));
-
-  /* === TOP-LEFT: лого DÄSHO === */
+  /* === TOP-LEFT: лого DÄSHO — крупный, заметный === */
   #brand,
-  #brand::before { font-size: 0.85rem !important; padding: 0 !important; content: normal !important; }
+  #brand::before { font-size: 1.05rem !important; padding: 0 !important; content: normal !important; }
   #brand {
     position: fixed !important;
-    top: var(--top-row) !important;
+    top: 1rem !important;
     left: 0.7rem !important;
     right: auto !important;
     bottom: auto !important;
     transform: rotate(-3deg) !important;
-    padding: 0.4rem 0.85rem !important;
-    box-shadow: 0 3px 14px rgba(254, 239, 51, 0.35) !important;
+    padding: 0.5rem 1rem !important;
+    box-shadow: 0 4px 18px rgba(254, 239, 51, 0.45) !important;
     z-index: 60 !important;
     white-space: nowrap;
   }
   #brand::before { display: none !important; }
 
-  /* === TOP-CENTER: History bar === */
+  /* === TOP-CENTER: History bar (↶ 1/1 ↷ 💾 ↩) === */
   #history-bar {
     display: flex !important;
     position: fixed !important;
-    top: var(--top-row) !important;
+    top: 1rem !important;
     bottom: auto !important;
     left: 50% !important;
     right: auto !important;
     transform: translateX(-50%) !important;
     z-index: 60 !important;
-    padding: 0.2rem 0.4rem !important;
-    gap: 0.2rem !important;
+    padding: 0.25rem 0.45rem !important;
+    gap: 0.25rem !important;
   }
-  #history-bar button { width: 1.9rem !important; height: 1.9rem !important; padding: 0 !important; font-size: 0.95rem !important; }
-  #history-bar .pos { font-size: 0.65rem !important; padding: 0 0.15rem !important; }
+  #history-bar button {
+    width: 2.1rem !important;
+    height: 2.1rem !important;
+    padding: 0 !important;
+    font-size: 1.1rem !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-radius: 50% !important;
+  }
+  #history-bar button:disabled { color: rgba(255, 255, 255, 0.3) !important; }
+  #history-bar .pos { font-size: 0.7rem !important; padding: 0 0.2rem !important; color: var(--yellow) !important; }
+  #history-bar .sep { display: none !important; }
 
   /* === TOP-RIGHT: ⊕ кнопка добавить ноду === */
   .header-left {
     position: fixed !important;
-    top: var(--top-row) !important;
+    top: 1rem !important;
     bottom: auto !important;
     left: auto !important;
     right: 0.7rem !important;
@@ -311,12 +316,9 @@ button:active { transform: translateY(0); }
     padding: 0 !important;
     box-shadow: none !important;
   }
-  /* Из header-left на mobile в шапке остаётся только палитра-кнопка */
-  .header-left > #templates-btn,
-  .header-left > #rec-btn,
-  .header-left > #share-btn,
-  .header-left > #master-fade-wrap,
-  .header-left > #clear-all-btn { display: none !important; }
+  /* Кнопки внутри header-left которые мы перетаскиваем в другие места —
+     НЕ скрываем (иначе override через #ID не победит .header-left > #ID).
+     Они переезжают через position:fixed ниже. */
   /* Палитра — круглый ⊕, жёлтый */
   #palette-btn {
     width: 2.4rem !important;
