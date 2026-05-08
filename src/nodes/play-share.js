@@ -28,6 +28,19 @@ export class PlayShareNode extends Node {
     this._stream = null;
   }
 
+  mount(parent) {
+    const el = super.mount(parent);
+    el.classList.add('play-share-node');
+    // На mobile FAB — тап по самой кнопке (не по сокету) разворачивает меню
+    el.addEventListener('click', (e) => {
+      if (!el.classList.contains('mobile-fab')) return;
+      // Игнорируем клики по сокету или меню — там своя логика
+      if (e.target.closest('.socket, .node-body, button, input, select')) return;
+      el.classList.toggle('expanded');
+    });
+    return el;
+  }
+
   init() {
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;flex-direction:column;gap:0.5rem;margin-top:0.2rem';

@@ -539,6 +539,89 @@ button:active { transform: translateY(0); }
   #fps-mobile-wrap, #stream-btn { display: none !important; }
 }
 
+/* ── 👁 PlayShare FAB — закреплённая нода в левом нижнем углу ────────
+   На mobile/iPad/touch — большой зелёный круг с сокетом по центру.
+   Тяни любой провод от другой ноды → провод приходит сюда → можно делиться. */
+@media (max-width: 1100px) {
+  .play-share-node.mobile-fab {
+    position: fixed !important;
+    bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)) !important;
+    left: 0.5rem !important;
+    top: auto !important;
+    z-index: 58 !important;
+    width: 4.2rem !important;
+    min-width: 4.2rem !important;
+    max-width: 4.2rem !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: radial-gradient(circle at 50% 50%, rgba(0, 255, 127, 0.35), rgba(0, 255, 127, 0.15)) !important;
+    border: 2px solid #00ff7f !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 28px rgba(0, 255, 127, 0.5), 0 4px 18px rgba(0, 0, 0, 0.4) !important;
+    overflow: visible !important;
+    height: 4.2rem !important;
+  }
+  /* Скрываем стандартные части ноды на FAB-режиме */
+  .play-share-node.mobile-fab .node-header,
+  .play-share-node.mobile-fab .node-arrow,
+  .play-share-node.mobile-fab .node-btn,
+  .play-share-node.mobile-fab .node-icon,
+  .play-share-node.mobile-fab .row-label,
+  .play-share-node.mobile-fab .param-output,
+  .play-share-node.mobile-fab .group-header { display: none !important; }
+  /* Глаз-эмодзи в центре */
+  .play-share-node.mobile-fab::before {
+    content: '👁';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* Сокет-вход — ОЧЕНЬ большой и видимый, чтобы провода легко приходили */
+  .play-share-node.mobile-fab .socket-in {
+    position: absolute !important;
+    width: 28px !important;
+    height: 28px !important;
+    left: -10px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background: #00ff7f !important;
+    border: 3px solid #0a0a14 !important;
+    box-shadow: 0 0 14px rgba(0, 255, 127, 0.8) !important;
+    z-index: 5 !important;
+  }
+  .play-share-node.mobile-fab .socket-in::after {
+    inset: -16px !important; /* 60px touch-target */
+  }
+  /* Тело свёрнуто — но при раскрытии (тап на FAB) — bottom-sheet с кнопками */
+  .play-share-node.mobile-fab .node-body { display: none; }
+  .play-share-node.mobile-fab.expanded .node-body {
+    display: flex !important;
+    flex-direction: column;
+    position: fixed;
+    bottom: calc(9rem + env(safe-area-inset-bottom, 0px));
+    left: 0.5rem;
+    right: 0.5rem;
+    background: rgba(10, 10, 20, 0.95);
+    border: 1px solid rgba(0, 255, 127, 0.4);
+    border-radius: 16px;
+    padding: 0.6rem;
+    box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.6);
+    z-index: 70;
+    gap: 0.4rem;
+  }
+  /* Лёгкое покачивание чтобы FAB заметили */
+  @keyframes play-share-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
+  }
+  .play-share-node.mobile-fab { animation: play-share-pulse 3s ease-in-out infinite; }
+}
+
 /* iPad: учитываем home indicator снизу — scene-bar 1-9 не должен быть под жестом */
 @supports (padding: max(0px)) {
   #scene-bar {

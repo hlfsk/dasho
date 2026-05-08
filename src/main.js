@@ -113,7 +113,7 @@ import { PaintNode }          from './nodes/paint.js?v=5';
 import { MixNode }            from './nodes/mix.js?v=2';
 import { MapperNode }         from './nodes/mapper.js?v=2';
 import { ProjectorOutputNode } from './nodes/projector-output.js?v=3';
-import { PlayShareNode }      from './nodes/play-share.js';
+import { PlayShareNode }      from './nodes/play-share.js?v=2';
 import { FinalCollageNode }   from './nodes/final-collage.js';
 
 // Регистрация типов нод (порядок = порядок в палитре).
@@ -2497,7 +2497,32 @@ _tryLoadFromUrl().then((loaded) => {
   const y   = Math.max(40, Math.round(H * 0.30));
   createNode('Camera',       { x: camX, y });
   createNode('FinalCollage', { x: finX, y });
-});
+}).then(ensureMobilePlayShare);
+
+// На mobile / iPad всегда есть закреплённая PlayShare-нода в левом нижнем
+// углу — большой зелёный сокет, тяни любой видео-провод к ней и делись.
+function ensureMobilePlayShare() {
+  if (!window.matchMedia('(max-width: 1100px)').matches) return;
+  const exists = [...nodes.values()].some(
+    (n) => n.constructor && n.constructor._typeName === 'PlayShare'
+  );
+  if (exists) return;
+  const node = createNode('PlayShare', { x: 20, y: window.innerHeight - 200 });
+  if (node?.el) node.el.classList.add('mobile-fab');
+}
+// Также — каждый раз когда сцена загружается (templates / share / scenes),
+// после её применения проверяем что PlayShare-FAB всё ещё на месте
+const _origDeserialize = deserializeGraph;
+// (Вызов уже заменён выше через eval/import — делаем patch через MutationObserver)
+new MutationObserver(() => {
+  if (!window.matchMedia('(max-width: 1100px)').matches) return;
+  // Помечаем все PlayShare ноды классом FAB
+  for (const n of nodes.values()) {
+    if (n.constructor?._typeName === 'PlayShare') {
+      n.el?.classList.add('mobile-fab');
+    }
+  }
+}).observe(document.getElementById('dock'), { childList: true, subtree: false });
 
 // ── Главный цикл (60 fps) ───────────────────────────────────────────────
 
