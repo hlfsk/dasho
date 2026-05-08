@@ -548,25 +548,28 @@ button:active { transform: translateY(0); }
 }
 #play-node-tab {
   position: fixed;
-  left: 0;
-  bottom: 30%;
+  /* Сразу над кнопкой 👁 в bottom-left (👁: bottom 0.85rem + ~3rem высота кнопки) */
+  left: 0.6rem;
+  bottom: calc(4.4rem + env(safe-area-inset-bottom, 0px));
   z-index: 60;
-  background: var(--yellow);
-  color: #000;
+  background: transparent;
+  color: var(--blue); /* бирюзовый #00e5d5 */
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, 'Helvetica Neue', sans-serif;
   font-weight: 900;
   font-size: 0.95rem;
-  letter-spacing: 0.05em;
-  padding: 0.8rem 0.45rem;
+  letter-spacing: 0.04em;
+  line-height: 0.95;
+  padding: 0.2rem 0.3rem;
   border: none;
-  border-radius: 0 14px 14px 0;
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  box-shadow: 4px 4px 18px rgba(254, 239, 51, 0.35), 4px 4px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: none;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+  text-shadow: 0 0 14px rgba(0, 229, 213, 0.4);
 }
-#play-node-tab:hover { filter: brightness(0.95); }
+#play-node-tab:hover { filter: brightness(1.1); }
 @media (min-width: 1101px) {
   #play-node-tab { display: none; }
 }

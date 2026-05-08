@@ -2514,7 +2514,7 @@ function ensureMobilePlayShare() {
   const tab = document.createElement('button');
   tab.id = 'play-node-tab';
   tab.type = 'button';
-  tab.textContent = 'play node';
+  tab.innerHTML = '<span>play</span><span>node</span>';
   tab.addEventListener('click', openPlayNodeSheet);
   document.body.appendChild(tab);
 }
