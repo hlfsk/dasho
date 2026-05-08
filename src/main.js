@@ -1009,15 +1009,36 @@ sceneBar?.appendChild(importBtn);
   streamBtn.type = 'button';
   streamBtn.title = 'Стрим — спрятать UI и показать только финальный коллаж';
   streamBtn.textContent = '👁';
+  function exitStream() {
+    if (!document.body.classList.contains('projector-mode')) return;
+    document.body.classList.remove('projector-mode');
+    streamBtn.textContent = '👁';
+    streamBtn.title = 'Стрим — спрятать UI';
+    try { document.exitFullscreen?.().catch(() => {}); } catch {}
+  }
+  function enterStream() {
+    document.body.classList.add('projector-mode');
+    streamBtn.title = 'Стрим';
+    try { document.documentElement.requestFullscreen?.().catch(() => {}); } catch {}
+    // Подсказка как выйти
+    try { toast?.('👁 двойной тап по экрану — выход'); } catch {}
+  }
   streamBtn.addEventListener('click', () => {
-    document.body.classList.toggle('projector-mode');
-    const active = document.body.classList.contains('projector-mode');
-    streamBtn.textContent = active ? '✕' : '👁';
-    streamBtn.title = active ? 'Выйти из стрима' : 'Стрим — спрятать UI';
-    try {
-      if (active) document.documentElement.requestFullscreen?.().catch(() => {});
-      else document.exitFullscreen?.().catch(() => {});
-    } catch {}
+    if (document.body.classList.contains('projector-mode')) exitStream();
+    else enterStream();
+  });
+
+  // Выход из стрима по двойному тапу — для iOS используем ручной детектор
+  // потому что нативный dblclick на touch-устройствах ненадёжен
+  let lastTap = 0;
+  document.addEventListener('pointerup', (e) => {
+    if (!document.body.classList.contains('projector-mode')) return;
+    const now = performance.now();
+    if (now - lastTap < 400) exitStream();
+    lastTap = now;
+  });
+  document.addEventListener('dblclick', () => {
+    if (document.body.classList.contains('projector-mode')) exitStream();
   });
   document.body.appendChild(streamBtn);
 

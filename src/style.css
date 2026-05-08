@@ -1202,25 +1202,8 @@ body.projector-mode #stage {
   z-index: 9999 !important;
 }
 body.projector-mode { cursor: none; }
-/* Кнопка выхода из режима стрим — единственная видимая, в углу */
-body.projector-mode #stream-btn {
-  display: inline-flex !important;
-  position: fixed !important;
-  top: max(1rem, env(safe-area-inset-top, 1rem)) !important;
-  right: 0.7rem !important;
-  left: auto !important;
-  bottom: auto !important;
-  width: 2.8rem !important;
-  height: 2.8rem !important;
-  border-radius: 50% !important;
-  background: rgba(0, 0, 0, 0.7) !important;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.25) !important;
-  color: white !important;
-  font-size: 1.2rem !important;
-  z-index: 10000 !important;
-}
+/* Стрим-кнопка тоже спрятана в режиме — выход через двойной тап */
+body.projector-mode #stream-btn { display: none !important; }
 
 /* ── Кнопка «📝 Фидбек» — левый нижний угол ──────────────────────── */
 #feedback-btn {
