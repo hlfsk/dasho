@@ -1689,10 +1689,10 @@ body.dragover::after {
 
 /* ── History-bar (undo/redo/save) — в шапке по центру ──────────────────── */
 #history-bar {
-  /* Уехал из центра — теперь справа, под шапкой */
+  /* Слева внизу, сразу после кнопки 📝 фидбека (left: 0.7rem + 2.4rem кнопка + 0.5rem gap) */
   position: fixed;
-  top: 3.4rem;
-  right: 0.7rem;
+  left: 3.6rem;
+  bottom: max(0.7rem, env(safe-area-inset-bottom, 0.7rem));
   z-index: 45;
   display: flex;
   align-items: center;
