@@ -335,23 +335,24 @@ button:active { transform: translateY(0); }
     padding: 0 !important;
     box-shadow: none !important;
   }
-  /* === TOP-RIGHT: ⊕ кнопка добавить ноду === */
+  /* === TOP-RIGHT: ⊕ кнопка добавить ноду — прозрачная с тонкой жёлтой обводкой === */
   #palette-btn {
     width: 2.6rem !important;
     height: 2.6rem !important;
     padding: 0 !important;
     border-radius: 50% !important;
-    background: rgba(254, 239, 51, 0.22) !important;
+    background: transparent !important;
     color: var(--yellow) !important;
-    box-shadow: 0 4px 16px rgba(254, 239, 51, 0.3) !important;
-    border: 1px solid rgba(254, 239, 51, 0.5) !important;
-    font-size: 1.6rem !important;
+    box-shadow: none !important;
+    border: 1.5px solid rgba(254, 239, 51, 0.6) !important;
     line-height: 1 !important;
+    font-weight: 700 !important;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
   }
-  #palette-btn::before { content: '⊕'; font-weight: 900; }
+  /* Текст устанавливается через JS как «⊕». ::before не используем чтобы
+     не дублировать с textContent. */
 
   /* === LEFT-MIDDLE: ⬆ Выгрузить === */
   #scene-export-btn {
@@ -468,7 +469,7 @@ button:active { transform: translateY(0); }
     text-align: center;
   }
 
-  /* === BOTTOM-RIGHT: 🗑 корзина === */
+  /* === BOTTOM-RIGHT: 🗑 корзина (текст ставится в JS) === */
   #clear-all-btn {
     display: inline-flex !important;
     align-items: center;
@@ -484,11 +485,10 @@ button:active { transform: translateY(0); }
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    color: transparent !important;
-    font-size: 0 !important;
+    font-size: 1.6rem !important;
+    color: rgba(255, 255, 255, 0.95) !important;
     z-index: 60;
   }
-  #clear-all-btn::before { content: '🗑'; font-size: 1.6rem; }
 
   /* === Палитра — bottom-sheet (когда нажата ⊕ сверху) === */
   #palette {

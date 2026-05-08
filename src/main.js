@@ -999,58 +999,97 @@ const sceneBar = document.getElementById('scene-bar');
 sceneBar?.appendChild(exportBtn);
 sceneBar?.appendChild(importBtn);
 
-// ─── Mobile-only: кнопка «👁 стрим» (fullscreen без UI) и ←FPS→ ───
+// ─── Mobile-only кнопки: 👁 стрим, ◀ undo / fps / redo ▶ ───
 {
-  // Кнопка «стрим» — переключает body.projector-mode + fullscreen
+  // 👁 стрим — переключает body.projector-mode (скрывает весь UI кроме canvas).
+  // На iOS requestFullscreen не работает в обычном Safari, поэтому используем
+  // только CSS-режим — он точно работает.
   const streamBtn = document.createElement('button');
   streamBtn.id = 'stream-btn';
   streamBtn.type = 'button';
-  streamBtn.title = 'Стрим — fullscreen без UI';
+  streamBtn.title = 'Стрим — спрятать UI и показать только финальный коллаж';
   streamBtn.textContent = '👁';
-  streamBtn.addEventListener('click', async () => {
+  streamBtn.addEventListener('click', () => {
+    document.body.classList.toggle('projector-mode');
+    // Пытаемся ещё и fullscreen — если поддерживается, ОК; не поддерживается — игнор
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await document.documentElement.requestFullscreen();
+      if (document.body.classList.contains('projector-mode')) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.().catch(() => {});
+      }
     } catch {}
   });
   document.body.appendChild(streamBtn);
 
-  // ←FPS→ обёртка с двумя кнопками — меняют fps-select циклически
+  // ◀ ▶ — undo / redo, между ними клик-able fps-pill (циклически меняет fps)
   const fpsValues = ['auto', '120', '60', '30'];
   const wrap = document.createElement('div');
   wrap.id = 'fps-mobile-wrap';
   const prev = document.createElement('button');
   prev.type = 'button';
-  prev.id = 'fps-prev';
+  prev.id = 'm-undo';
+  prev.title = 'Назад (undo)';
   prev.textContent = '◀';
-  const label = document.createElement('span');
+  prev.addEventListener('click', () => {
+    document.getElementById('undo-btn')?.click();
+  });
+  const label = document.createElement('button');
+  label.type = 'button';
   label.id = 'fps-mobile-label';
-  const next = document.createElement('button');
-  next.type = 'button';
-  next.id = 'fps-next';
-  next.textContent = '▶';
-  wrap.appendChild(prev);
-  wrap.appendChild(label);
-  wrap.appendChild(next);
-  document.body.appendChild(wrap);
-
+  label.title = 'Тап — переключить fps';
   function refreshLabel() {
     const sel = document.getElementById('fps-select');
     const v = sel?.value || 'auto';
     label.textContent = v === 'auto' ? 'fps:auto' : `fps:${v}`;
   }
-  function step(d) {
+  label.addEventListener('click', () => {
     const sel = document.getElementById('fps-select');
     if (!sel) return;
     const i = fpsValues.indexOf(sel.value);
-    const ni = (i + d + fpsValues.length) % fpsValues.length;
+    const ni = (i + 1) % fpsValues.length;
     sel.value = fpsValues[ni];
     sel.dispatchEvent(new Event('change', { bubbles: true }));
     refreshLabel();
-  }
-  prev.addEventListener('click', () => step(-1));
-  next.addEventListener('click', () => step(1));
+  });
+  const next = document.createElement('button');
+  next.type = 'button';
+  next.id = 'm-redo';
+  next.title = 'Вперёд (redo)';
+  next.textContent = '▶';
+  next.addEventListener('click', () => {
+    document.getElementById('redo-btn')?.click();
+  });
+  wrap.appendChild(prev);
+  wrap.appendChild(label);
+  wrap.appendChild(next);
+  document.body.appendChild(wrap);
   refreshLabel();
+
+  // Переопределяем текст кнопок которые на mobile должны быть эмодзи —
+  // надёжнее чем CSS font-size:0 + ::before, не зависит от font-loading
+  function setupMobileLabels() {
+    if (!window.matchMedia('(max-width: 600px)').matches) return;
+    const palette = document.getElementById('palette-btn');
+    if (palette && palette.dataset.mobileLabel !== '1') {
+      palette.dataset.mobileLabel = '1';
+      palette.textContent = '⊕';
+      palette.style.fontSize = '1.7rem';
+      palette.style.lineHeight = '1';
+    }
+    const clear = document.getElementById('clear-all-btn');
+    if (clear && clear.dataset.mobileLabel !== '1') {
+      clear.dataset.mobileLabel = '1';
+      clear.textContent = '🗑';
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupMobileLabels);
+  } else {
+    setupMobileLabels();
+  }
+  // На случай если DOM-элементы создаются позже main.js — задёргаем повторно
+  setTimeout(setupMobileLabels, 100);
 }
 
 // ─────────────────────────────────────────────────────────────────────────
