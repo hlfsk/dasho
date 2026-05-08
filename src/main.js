@@ -2112,6 +2112,53 @@ const selectedNodes = new Set();
   });
 }
 
+// ── Long-press на touch = эмуляция правого клика ────────────────────────
+// На iPad/iPhone нет правой кнопки и нет Cmd. Долгое касание (≥600мс)
+// без движения пальца → диспатчим contextmenu на тот же элемент.
+// Существующие ПКМ-меню (ноды, слайдеры с MIDI Learn) работают автоматически.
+{
+  let pressTimer = null;
+  let pressTarget = null;
+  let pressX = 0, pressY = 0;
+
+  function clearPress() {
+    if (pressTimer) clearTimeout(pressTimer);
+    pressTimer = null;
+    pressTarget = null;
+  }
+
+  document.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'touch') return;
+    // Игнорируем элементы которые сами обрабатывают long-touch (поля ввода)
+    if (e.target.closest('input[type="text"], input[type="url"], input[type="password"], textarea, select')) return;
+    pressTarget = e.target;
+    pressX = e.clientX;
+    pressY = e.clientY;
+    pressTimer = setTimeout(() => {
+      if (!pressTarget) return;
+      // Лёгкая тактильная подсказка (где доступна)
+      try { navigator.vibrate?.(20); } catch {}
+      const ev = new PointerEvent('contextmenu', {
+        bubbles: true, cancelable: true,
+        clientX: pressX, clientY: pressY,
+        pointerType: 'touch',
+      });
+      pressTarget.dispatchEvent(ev);
+      pressTimer = null;
+      pressTarget = null;
+    }, 600);
+  }, true);
+
+  document.addEventListener('pointermove', (e) => {
+    if (!pressTimer) return;
+    if (Math.hypot(e.clientX - pressX, e.clientY - pressY) > 12) clearPress();
+  }, true);
+
+  document.addEventListener('pointerup', clearPress, true);
+  document.addEventListener('pointercancel', clearPress, true);
+  document.addEventListener('touchcancel', clearPress, true);
+}
+
 // ── Wire-cut: Cmd/Ctrl+drag через провода → разрезать ──────────────────
 {
   let cutting = false;

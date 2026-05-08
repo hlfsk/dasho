@@ -30,7 +30,18 @@ html, body {
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
+  /* iPad/iPhone: убираем 300мс задержку tap, двойной-tap zoom и резиновый bounce */
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
 }
+
+/* На холсте и интерактивных слоях — полностью свой жест-движок */
+#dock, #stage, #wires, #dots-bg, .node, .socket {
+  touch-action: none;
+}
+/* Поля ввода и select — оставляем системные жесты */
+input, textarea, select { touch-action: auto; }
 
 /* ── Финальный коллаж (canvas) — фон сцены ──────────────────────────────── */
 #stage {
@@ -211,11 +222,15 @@ button:active { transform: translateY(0); }
 /* Узкие экраны — компактим элементы чтобы влезли в одну строку */
 @media (max-width: 1100px) {
   .header-left, .header-right { gap: 0.3rem; }
-  #templates-btn, #rec-btn, #clear-all-btn { font-size: 0.72rem; padding: 0.35rem 0.55rem; }
+  #templates-btn, #rec-btn, #clear-all-btn, #share-btn { font-size: 0.72rem; padding: 0.35rem 0.55rem; }
   #palette-btn { font-size: 0.78rem; padding: 0.4rem 0.7rem; }
   #master-fade { width: 60px; }
   #brand { font-size: 0.82rem; padding: 0.35rem 0.75rem; }
   .header-right { right: 5.8rem; }
+}
+@media (max-width: 900px) {
+  /* iPad portrait и меньше — header может переноситься во 2-ю строку */
+  .header-left, .header-right { flex-wrap: wrap; }
 }
 @media (max-width: 760px) {
   /* Лого превращается в букву D — место в строке остаётся */
@@ -225,6 +240,16 @@ button:active { transform: translateY(0); }
   #cookbook-add-btn, #fullscreen-btn { width: 1.7rem; height: 1.7rem; font-size: 0.85rem; }
   #master-fade-wrap .lab { display: none; }
   #master-fade { width: 48px; }
+}
+
+/* iPad: учитываем home indicator снизу — scene-bar 1-9 не должен быть под жестом */
+@supports (padding: max(0px)) {
+  #scene-bar {
+    padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
+  }
+  #statusbar {
+    padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
+  }
 }
 
 #palette-btn {
@@ -431,17 +456,25 @@ button:active { transform: translateY(0); }
 /* Активируется ТОЛЬКО на устройствах без мыши + grubый pointer (палец).
    Desktop (даже на маленьком окне) НЕ затрагивается. */
 @media (hover: none) and (pointer: coarse) {
-  /* Сокеты крупнее — Apple HIG рекомендует ≥44px touch-target */
+  /* Сокеты ещё крупнее — Apple HIG рекомендует ≥44px touch-target.
+     Невидимая «рука» через ::after позволяет визуально оставить кружок мелким,
+     но реально схватывать с 44px вокруг — touch куда удобнее. */
   .socket {
-    width: 22px;
-    height: 22px;
+    width: 16px;
+    height: 16px;
   }
-  .socket-in  { left: -12px; }
-  .socket-out { right: -12px; }
+  .socket::after {
+    content: '';
+    position: absolute;
+    inset: -14px;          /* 14*2 + 16 = 44px touch-target */
+    border-radius: 50%;
+  }
+  .socket-in  { left: -10px; }
+  .socket-out { right: -10px; }
   .row .socket-in  { left: -2.4rem; }
   .row .socket-out { right: -2.4rem; }
   .row .socket-in,
-  .row .socket-out { margin-top: -11px; }
+  .row .socket-out { margin-top: -8px; }
 
   /* Кнопки крупнее */
   button { padding: 0.7rem 1.1rem; font-size: 1rem; }
@@ -449,8 +482,8 @@ button:active { transform: translateY(0); }
 
   /* Слайдеры — толще thumb */
   .param input[type="range"] { height: 6px; }
-  .param input[type="range"]::-webkit-slider-thumb { width: 22px; height: 22px; }
-  .param input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; }
+  .param input[type="range"]::-webkit-slider-thumb { width: 28px; height: 28px; }
+  .param input[type="range"]::-moz-range-thumb { width: 28px; height: 28px; }
 
   /* Меньше hover-эффектов которые раздражают на touch */
   button:hover { transform: none; }
@@ -504,6 +537,15 @@ button:active { transform: translateY(0); }
   width: 220px;
   max-height: calc(100vh - 4.5rem);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* плавный inertia-scroll на iOS */
+}
+/* На iPad / узких экранах — палитра шире и почти на полную высоту */
+@media (hover: none) and (pointer: coarse), (max-width: 900px) {
+  #palette {
+    width: min(320px, calc(100vw - 1.4rem));
+    max-height: calc(100vh - 4.5rem - env(safe-area-inset-bottom, 0px));
+    top: 4rem;
+  }
 }
 /* ── Палитра нод — категории с цветной полоской слева ──────────────────── */
 .palette-cat {
