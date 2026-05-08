@@ -242,130 +242,284 @@ button:active { transform: translateY(0); }
   #master-fade { width: 48px; }
 }
 
-/* ── 📱 Mobile portrait — чистая раскладка для скриншотов ──────────────
-   Лого вверху под notch, 4 цветные круглые FAB внизу, чистый холст. */
+/* ── 📱 Mobile portrait — раскладка по эскизу пользователя ──────────────
+   Top:    [DÄSHO] · [↶ □ ↷] · [⊕]
+   Left:   ○○○○○ (5 сцен в столбик)
+   Right:  ▌FADE (вертикальный слайдер)
+   Bottom: 📝  📚  ●REC  🗑  fps
+   Center: канвас с нодами */
 @media (max-width: 600px) {
-  /* === Скрываем всё что не нужно для скриншота === */
-  #hint, #statusbar, #scene-bar, #history-bar,
-  #master-fade-wrap, .header-right,
-  #cookbook-add-btn, #share-btn { display: none !important; }
+  /* Скрываем шумное */
+  #hint, #statusbar, #cookbook-add-btn { display: none !important; }
 
-  /* === ЛОГО — крупный, под notch, по центру === */
+  /* === TOP-LEFT: лого DÄSHO === */
   #brand,
-  #brand::before {
-    /* отменяем все варианты с font-size:0 + ::before='D' из других media */
-    font-size: 1.15rem !important;
-    padding: 0 !important;
-    content: normal !important;
-  }
+  #brand::before { font-size: 0.85rem !important; padding: 0 !important; content: normal !important; }
   #brand {
     position: fixed !important;
     top: max(0.7rem, env(safe-area-inset-top, 0.7rem)) !important;
-    left: 50% !important;
+    left: 0.7rem !important;
     right: auto !important;
     bottom: auto !important;
-    transform: translate(-50%, 0) rotate(-3deg) !important;
-    transform-origin: center center !important;
-    padding: 0.55rem 1.2rem !important;
-    box-shadow:
-      0 4px 24px rgba(254, 239, 51, 0.4),
-      0 0 0 4px rgba(254, 239, 51, 0.08) !important;
+    transform: rotate(-3deg) !important;
+    padding: 0.4rem 0.85rem !important;
+    box-shadow: 0 3px 14px rgba(254, 239, 51, 0.35) !important;
     z-index: 60 !important;
     white-space: nowrap;
   }
   #brand::before { display: none !important; }
 
-  /* === Floating Action Buttons — 4 шт внизу горизонтально === */
-  .header-left {
+  /* === TOP-CENTER: History bar (↶ pos ↷ │ 💾 │ ↩) === */
+  #history-bar {
+    display: flex !important;
     position: fixed !important;
+    top: max(0.7rem, env(safe-area-inset-top, 0.7rem)) !important;
+    bottom: auto !important;
     left: 50% !important;
     right: auto !important;
-    bottom: calc(1rem + env(safe-area-inset-bottom, 0px)) !important;
-    top: auto !important;
     transform: translateX(-50%) !important;
     z-index: 60 !important;
+    padding: 0.2rem 0.4rem !important;
+    gap: 0.2rem !important;
+  }
+  #history-bar button { width: 1.9rem !important; height: 1.9rem !important; padding: 0 !important; font-size: 0.95rem !important; }
+  #history-bar .pos { font-size: 0.65rem !important; padding: 0 0.15rem !important; }
+
+  /* === TOP-RIGHT: ⊕ кнопка добавить ноду (она же палитра) === */
+  .header-left {
+    position: fixed !important;
+    top: max(0.7rem, env(safe-area-inset-top, 0.7rem)) !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 0.7rem !important;
+    transform: none !important;
+    z-index: 60 !important;
     display: flex !important;
+    flex-direction: row !important;
     flex-wrap: nowrap !important;
-    justify-content: center !important;
-    gap: 0.7rem !important;
+    gap: 0.4rem !important;
     background: transparent !important;
     border: none !important;
     border-radius: 0 !important;
     padding: 0 !important;
     box-shadow: none !important;
-    max-width: none !important;
-    width: auto !important;
   }
-  /* Каждая кнопка — круг 56×56 */
-  .header-left > button {
-    width: 3.5rem !important;
-    height: 3.5rem !important;
+  /* Из header-left на mobile в шапке остаётся только палитра-кнопка */
+  .header-left > #templates-btn,
+  .header-left > #rec-btn,
+  .header-left > #share-btn,
+  .header-left > #master-fade-wrap,
+  .header-left > #clear-all-btn { display: none !important; }
+  /* Палитра — круглый ⊕, жёлтый */
+  #palette-btn {
+    width: 2.4rem !important;
+    height: 2.4rem !important;
     padding: 0 !important;
     border-radius: 50% !important;
+    background: var(--yellow) !important;
+    color: #000 !important;
+    box-shadow: 0 4px 16px rgba(254, 239, 51, 0.4) !important;
+    border: 1px solid rgba(254, 239, 51, 0.5) !important;
+    font-size: 0 !important;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    color: transparent !important; /* прячем оригинальный текст */
-    font-size: 0 !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-  }
-  /* Палитра — главная, крупнее, жёлтая */
-  #palette-btn {
-    width: 4.2rem !important;
-    height: 4.2rem !important;
-    background: var(--yellow) !important;
-    border-color: rgba(254, 239, 51, 0.5) !important;
-    box-shadow: 0 6px 24px rgba(254, 239, 51, 0.45) !important;
   }
   #palette-btn::before {
     content: '+';
-    color: #000;
-    font-size: 2.6rem;
+    font-size: 1.7rem;
     font-weight: 900;
     line-height: 1;
   }
-  /* Шоу — фиолетовая */
-  #templates-btn {
-    background: rgba(196, 168, 255, 0.22) !important;
-    border-color: rgba(196, 168, 255, 0.4) !important;
-  }
-  #templates-btn::before { content: '📚'; font-size: 1.5rem; }
-  /* REC — красная */
-  #rec-btn {
-    background: rgba(255, 77, 46, 0.22) !important;
-    border-color: rgba(255, 77, 46, 0.45) !important;
-  }
-  #rec-btn::before { content: '●'; font-size: 1.7rem; color: #ff4d2e; }
-  /* Очистить — стеклянная */
-  #clear-all-btn::before { content: '🗑'; font-size: 1.5rem; }
 
-  /* === Feedback в верхнем-левом углу === */
-  #feedback-btn {
-    top: max(0.85rem, env(safe-area-inset-top, 0.85rem)) !important;
-    bottom: auto !important;
-    left: 0.7rem !important;
+  /* === LEFT: 5 круглых кнопок-сцен в столбик === */
+  #scene-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    position: fixed !important;
+    left: 0.5rem !important;
     right: auto !important;
-    width: 2.6rem !important;
-    height: 2.6rem !important;
-    font-size: 1.05rem !important;
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    padding: 0.4rem 0.3rem !important;
+    gap: 0.3rem !important;
+    background: rgba(0, 0, 0, 0.45) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 22px !important;
+    z-index: 55 !important;
+  }
+  #scene-bar .lab,
+  #scene-bar .slots-clear,
+  /* Скрываем сцены 6-9 — на эскизе только 5 */
+  #scene-bar .slot[data-i="6"],
+  #scene-bar .slot[data-i="7"],
+  #scene-bar .slot[data-i="8"],
+  #scene-bar .slot[data-i="9"] { display: none !important; }
+  #scene-bar .slot {
+    width: 2rem !important;
+    height: 2rem !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    font-size: 0.78rem !important;
+    margin: 0 !important;
+  }
+
+  /* === RIGHT: FADE — вертикальный слайдер === */
+  #master-fade-wrap {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    position: fixed !important;
+    right: 0.5rem !important;
+    left: auto !important;
+    top: 50% !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    height: 11rem !important;
+    width: 2.4rem !important;
+    padding: 0.6rem 0.3rem !important;
+    background: rgba(0, 0, 0, 0.45) !important;
+    border-radius: 22px !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    align-items: center;
+    z-index: 55 !important;
+  }
+  #master-fade-wrap .lab {
+    font-size: 0.55rem !important;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    margin-bottom: 0.3rem;
+    display: inline !important;
+  }
+  #master-fade {
+    -webkit-appearance: slider-vertical;
+    appearance: slider-vertical;
+    writing-mode: vertical-lr;
+    direction: rtl;
+    width: 6px !important;
+    height: 100% !important;
+  }
+
+  /* === BOTTOM: 📝  📚  ●REC  🗑  fps === */
+  /* Делаем нижнюю плашку из feedback + переброшенных сюда templates/rec/clear + fps */
+  #feedback-btn {
+    position: fixed !important;
+    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
+    top: auto !important;
+    left: calc(50% - 7.5rem) !important;
+    right: auto !important;
+    width: 2.4rem !important;
+    height: 2.4rem !important;
+    font-size: 1rem !important;
     background: rgba(0, 0, 0, 0.55) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     z-index: 60;
   }
+  /* Templates вытаскиваем из header-left на mobile, ставим в нижнюю плашку как fixed */
+  #templates-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed !important;
+    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
+    left: calc(50% - 4.4rem) !important;
+    width: 2.4rem !important;
+    height: 2.4rem !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    background: rgba(196, 168, 255, 0.22) !important;
+    border: 1px solid rgba(196, 168, 255, 0.4) !important;
+    color: transparent !important;
+    font-size: 0 !important;
+    z-index: 60;
+  }
+  #templates-btn::before { content: '📚'; font-size: 1.2rem; }
+  #rec-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed !important;
+    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
+    left: calc(50% - 1.2rem) !important;
+    width: 2.4rem !important;
+    height: 2.4rem !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    background: rgba(255, 77, 46, 0.22) !important;
+    border: 1px solid rgba(255, 77, 46, 0.45) !important;
+    color: transparent !important;
+    font-size: 0 !important;
+    z-index: 60;
+  }
+  #rec-btn::before { content: '●'; font-size: 1.4rem; color: #ff4d2e; }
+  #clear-all-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed !important;
+    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
+    left: calc(50% + 2rem) !important;
+    width: 2.4rem !important;
+    height: 2.4rem !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    color: transparent !important;
+    font-size: 0 !important;
+    z-index: 60;
+  }
+  #clear-all-btn::before { content: '🗑'; font-size: 1.2rem; }
+  /* Share переезжает в bottom-row слева от центра */
+  #share-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed !important;
+    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
+    left: calc(50% - 7.5rem - 3rem) !important;
+    width: 2.4rem !important;
+    height: 2.4rem !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    color: transparent !important;
+    font-size: 0 !important;
+    z-index: 60;
+  }
+  #share-btn::before { content: '🔗'; font-size: 1.1rem; }
+  /* FPS селектор — справа */
+  .header-right {
+    display: flex !important;
+    position: fixed !important;
+    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
+    top: auto !important;
+    right: calc(50% - 7.5rem) !important;
+    left: auto !important;
+    z-index: 60;
+    flex-direction: row;
+    gap: 0.3rem;
+  }
+  .header-right #fullscreen-btn,
+  .header-right #lang-btn { display: none !important; }
+  #fps-select {
+    height: 2.4rem !important;
+    border-radius: 999px !important;
+    padding: 0 0.55rem !important;
+    font-size: 0.7rem !important;
+    background: rgba(0, 0, 0, 0.55) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
 
-  /* === Палитра — bottom-sheet === */
+  /* === Палитра — bottom-sheet (когда нажата ⊕ сверху) === */
   #palette {
     top: auto !important;
-    bottom: calc(6rem + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: calc(4rem + env(safe-area-inset-bottom, 0px)) !important;
     left: 0.5rem !important;
     right: 0.5rem !important;
     width: auto !important;
-    max-height: 60vh;
+    max-height: 55vh;
     border-radius: 22px;
     box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.6);
   }
