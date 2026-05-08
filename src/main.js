@@ -2112,6 +2112,127 @@ const selectedNodes = new Set();
   });
 }
 
+// ── Кнопка «📝 Фидбек» — левый нижний угол ─────────────────────────────
+{
+  const FB_KEY = 'dasho.feedback.history';
+  const TARGET_EMAIL = 'dasha.zorkina@gmail.com'; // куда отправлять
+  const fbBtn = document.getElementById('feedback-btn');
+
+  function saveLocal(entry) {
+    try {
+      const arr = JSON.parse(localStorage.getItem(FB_KEY) || '[]');
+      arr.unshift(entry);
+      // Лимит ~50 записей чтобы localStorage не разбух
+      if (arr.length > 50) arr.length = 50;
+      localStorage.setItem(FB_KEY, JSON.stringify(arr));
+    } catch {}
+  }
+
+  function snapshotMeta() {
+    const ua = navigator.userAgent;
+    const isIPad  = /iPad|Macintosh.*Mobile/.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
+    const isIPhone = /iPhone/.test(ua);
+    const isMac   = /Macintosh/.test(ua) && !isIPad;
+    const isWin   = /Windows/.test(ua);
+    const isAndroid = /Android/.test(ua);
+    const device = isIPad ? 'iPad' : isIPhone ? 'iPhone' : isAndroid ? 'Android' : isMac ? 'Mac' : isWin ? 'Windows' : 'Other';
+    return {
+      device,
+      ua,
+      lang: navigator.language,
+      tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      url: location.href,
+      ts: new Date().toISOString(),
+      // Состояние графа — даёт контекст что юзер делал
+      nodeCount: typeof nodes !== 'undefined' ? nodes.size : 0,
+    };
+  }
+
+  function open() {
+    if (document.querySelector('.fb-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'fb-overlay';
+    overlay.innerHTML = `
+      <div class="fb-modal">
+        <div class="fb-head">
+          <span class="fb-title">📝 Поделись впечатлением</span>
+          <button class="fb-close" type="button" aria-label="закрыть">✕</button>
+        </div>
+        <div class="fb-row">
+          <label>имя (опционально)</label>
+          <input type="text" data-f="name" placeholder="Яна, 14, ученица" />
+        </div>
+        <div class="fb-row">
+          <label>что застряло, что понравилось, что добавить?</label>
+          <textarea data-f="msg" rows="5" placeholder="Не нашла где включить камеру… Trailing — топ! Хочется загрузить свою музыку." autofocus></textarea>
+        </div>
+        <div class="fb-help">Сохраняется на твоём устройстве + откроется почта Дашé. Можно ничего не отправлять — просто закрой ✕.</div>
+        <div class="fb-actions">
+          <button class="fb-cancel" type="button">Отмена</button>
+          <button class="fb-send" type="button">Отправить</button>
+        </div>
+      </div>
+    `;
+    // Восстанавливаем имя из прошлого раза
+    const lastName = localStorage.getItem('dasho.feedback.name') || '';
+    overlay.querySelector('[data-f="name"]').value = lastName;
+
+    const close = () => overlay.remove();
+    overlay.querySelector('.fb-close').addEventListener('click', close);
+    overlay.querySelector('.fb-cancel').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+    overlay.querySelector('.fb-send').addEventListener('click', () => {
+      const name = overlay.querySelector('[data-f="name"]').value.trim();
+      const msg  = overlay.querySelector('[data-f="msg"]').value.trim();
+      if (!msg) {
+        overlay.querySelector('[data-f="msg"]').focus();
+        return;
+      }
+      const meta = snapshotMeta();
+      const entry = { name, msg, ...meta };
+      saveLocal(entry);
+      if (name) localStorage.setItem('dasho.feedback.name', name);
+
+      // Формируем письмо
+      const subject = `[DÄSHO feedback] ${name || 'аноним'} · ${meta.device}`;
+      const body = [
+        msg,
+        '',
+        '---',
+        `Имя: ${name || '—'}`,
+        `Устройство: ${meta.device}`,
+        `URL: ${meta.url}`,
+        `Кол-во нод в момент отправки: ${meta.nodeCount}`,
+        `Язык/TZ: ${meta.lang} / ${meta.tz}`,
+        `Время: ${meta.ts}`,
+        `User-Agent: ${meta.ua}`,
+      ].join('\n');
+      const mailto = `mailto:${TARGET_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+      // Web Share API (на iPad/iPhone — нативный шеринг)
+      if (navigator.share && /iPad|iPhone|Android/.test(navigator.userAgent)) {
+        navigator.share({
+          title: subject,
+          text: body,
+        }).catch(() => { window.location.href = mailto; });
+      } else {
+        // Копируем в буфер на случай если почта не настроена
+        try { navigator.clipboard?.writeText(body); } catch {}
+        window.location.href = mailto;
+      }
+
+      toast?.('🙏 спасибо! фидбек сохранён');
+      close();
+    });
+
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.querySelector('[data-f="msg"]').focus(), 50);
+  }
+
+  fbBtn?.addEventListener('click', open);
+}
+
 // ── Long-press на touch = эмуляция правого клика ────────────────────────
 // На iPad/iPhone нет правой кнопки и нет Cmd. Долгое касание (≥600мс)
 // без движения пальца → диспатчим contextmenu на тот же элемент.

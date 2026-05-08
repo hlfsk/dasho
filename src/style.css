@@ -871,6 +871,133 @@ details.node[open] .node-arrow { transform: rotate(180deg); }
   background: rgba(255, 255, 255, 0.08);
 }
 
+/* ── Кнопка «📝 Фидбек» — левый нижний угол ──────────────────────── */
+#feedback-btn {
+  position: fixed;
+  left: 0.7rem;
+  bottom: max(0.7rem, env(safe-area-inset-bottom, 0.7rem));
+  z-index: 60;
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+#feedback-btn:hover {
+  background: rgba(254, 239, 51, 0.18);
+  border-color: rgba(254, 239, 51, 0.4);
+  transform: translateY(-1px);
+}
+
+.fb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 1rem;
+}
+.fb-modal {
+  background: #1a1d2e;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  width: min(420px, calc(100vw - 2rem));
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  margin-bottom: max(3.4rem, calc(env(safe-area-inset-bottom, 0px) + 3.4rem));
+}
+.fb-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.fb-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--yellow);
+  letter-spacing: 0.02em;
+}
+.fb-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  box-shadow: none;
+}
+.fb-close:hover { color: white; }
+.fb-row { margin-top: 0.55rem; }
+.fb-row label {
+  display: block;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.65;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.fb-row input,
+.fb-row textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: white;
+  padding: 0.5rem 0.6rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+  resize: vertical;
+}
+.fb-row input:focus,
+.fb-row textarea:focus { border-color: rgba(254, 239, 51, 0.4); }
+.fb-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+  justify-content: flex-end;
+}
+.fb-send {
+  background: var(--yellow);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.fb-send:hover { filter: brightness(0.95); }
+.fb-cancel {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: none;
+}
+.fb-help {
+  font-size: 0.65rem;
+  opacity: 0.5;
+  line-height: 1.4;
+  margin-top: 0.6rem;
+}
+
 /* Multiselect — выделенные ноды */
 .node.selected {
   outline: 2px solid #feef33;
