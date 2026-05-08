@@ -527,6 +527,9 @@ button:active { transform: translateY(0); }
   position: fixed;
   top: 3.2rem;
   left: 0.7rem;
+  /* bottom вместо max-height — палитра тянется до scene-bar и safe-area
+     включает scene-bar (~3rem) + buffer + iPad home indicator */
+  bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
   z-index: 50;
   background: rgba(10, 10, 20, 0.92);
   backdrop-filter: blur(20px);
@@ -535,17 +538,22 @@ button:active { transform: translateY(0); }
   border-radius: 12px;
   padding: 0.55rem;
   width: 220px;
-  max-height: calc(100vh - 4.5rem);
   overflow-y: auto;
+  overscroll-behavior: contain; /* не дёргать родитель при достижении края */
   -webkit-overflow-scrolling: touch; /* плавный inertia-scroll на iOS */
 }
-/* На iPad / узких экранах — палитра шире и почти на полную высоту */
+/* На iPad / узких экранах — палитра шире */
 @media (hover: none) and (pointer: coarse), (max-width: 900px) {
   #palette {
     width: min(320px, calc(100vw - 1.4rem));
-    max-height: calc(100vh - 4.5rem - env(safe-area-inset-bottom, 0px));
     top: 4rem;
+    bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
   }
+}
+/* Узкие портретные экраны — header может переноситься во 2-ю строку,
+   палитра должна стартовать ниже чтобы не перекрывалась */
+@media (max-width: 760px) and (orientation: portrait) {
+  #palette { top: 7rem; }
 }
 /* ── Палитра нод — категории с цветной полоской слева ──────────────────── */
 .palette-cat {
