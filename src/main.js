@@ -1011,13 +1011,12 @@ sceneBar?.appendChild(importBtn);
   streamBtn.textContent = '👁';
   streamBtn.addEventListener('click', () => {
     document.body.classList.toggle('projector-mode');
-    // Пытаемся ещё и fullscreen — если поддерживается, ОК; не поддерживается — игнор
+    const active = document.body.classList.contains('projector-mode');
+    streamBtn.textContent = active ? '✕' : '👁';
+    streamBtn.title = active ? 'Выйти из стрима' : 'Стрим — спрятать UI';
     try {
-      if (document.body.classList.contains('projector-mode')) {
-        document.documentElement.requestFullscreen?.().catch(() => {});
-      } else {
-        document.exitFullscreen?.().catch(() => {});
-      }
+      if (active) document.documentElement.requestFullscreen?.().catch(() => {});
+      else document.exitFullscreen?.().catch(() => {});
     } catch {}
   });
   document.body.appendChild(streamBtn);

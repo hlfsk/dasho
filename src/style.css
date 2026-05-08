@@ -248,10 +248,10 @@ button:active { transform: translateY(0); }
    Bottom: 👁 СТРИМ · ◀FPS:30▶ · 🗑
    Кнопки — голые эмодзи без обводки, на тёмном фоне. */
 @media (max-width: 600px) {
-  /* Скрываем всё что не на эскизе */
+  /* Скрываем всё что не на эскизе. Templates теперь видим — это 📚 в углу слева. */
   #hint, #statusbar, #cookbook-add-btn,
   #feedback-btn, #history-bar,
-  #templates-btn, #rec-btn, #share-btn,
+  #rec-btn, #share-btn,
   /* Сцены 1-9 и заголовок «Сцены» скрываем, но контейнер scene-bar не скрываем —
      внутри живут import/export-кнопки которые нам нужны (мы их вынесем через position:fixed) */
   #scene-bar > .lab,
@@ -292,7 +292,28 @@ button:active { transform: translateY(0); }
   }
   #brand::before { display: none !important; }
 
-  /* === TOP-LEFT: ⬇ Загрузить === */
+  /* === TOP-LEFT: 📚 Show — открывает модалку шаблонов === */
+  #templates-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed !important;
+    top: 1rem !important;
+    left: 0.7rem !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 2.8rem !important;
+    height: 2.8rem !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-size: 1.5rem !important;
+    z-index: 60 !important;
+  }
+
+  /* ⬆ Выгрузить и ⬇ Загрузить — общий стиль */
   #scene-import-btn,
   #scene-export-btn {
     display: inline-flex !important;
@@ -306,12 +327,13 @@ button:active { transform: translateY(0); }
     border: none !important;
     box-shadow: none !important;
     color: rgba(255, 255, 255, 0.9) !important;
-    font-size: 1.6rem !important;
-    z-index: 60 !important;
+    font-size: 1.5rem !important;
+    z-index: 55 !important;
   }
+  /* ⬇ Загрузить теперь под выгрузом, оба слева в середине рядом с FADE */
   #scene-import-btn {
-    top: 1rem !important;
-    left: 0.7rem !important;
+    left: 0.6rem !important;
+    top: 22% !important;
     right: auto !important;
     bottom: auto !important;
   }
@@ -1167,13 +1189,38 @@ body.projector-mode #statusbar,
 body.projector-mode #hint,
 body.projector-mode #palette,
 body.projector-mode #toast,
-body.projector-mode #feedback-btn {
+body.projector-mode #feedback-btn,
+body.projector-mode #templates-btn,
+body.projector-mode #scene-import-btn,
+body.projector-mode #scene-export-btn,
+body.projector-mode #master-fade-wrap,
+body.projector-mode #fps-mobile-wrap,
+body.projector-mode #clear-all-btn {
   display: none !important;
 }
 body.projector-mode #stage {
   z-index: 9999 !important;
 }
 body.projector-mode { cursor: none; }
+/* Кнопка выхода из режима стрим — единственная видимая, в углу */
+body.projector-mode #stream-btn {
+  display: inline-flex !important;
+  position: fixed !important;
+  top: max(1rem, env(safe-area-inset-top, 1rem)) !important;
+  right: 0.7rem !important;
+  left: auto !important;
+  bottom: auto !important;
+  width: 2.8rem !important;
+  height: 2.8rem !important;
+  border-radius: 50% !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: white !important;
+  font-size: 1.2rem !important;
+  z-index: 10000 !important;
+}
 
 /* ── Кнопка «📝 Фидбек» — левый нижний угол ──────────────────────── */
 #feedback-btn {
