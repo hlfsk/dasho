@@ -91,6 +91,12 @@ export class ProjectorOutputNode extends Node {
     wrap.appendChild(status);
     this.bodyEl.prepend(wrap);
 
+    // Стандартный слайдер «вывод» (прозрачность) + select наложения.
+    // У ProjectorOutput нет видео-выхода (это конечная точка), поэтому
+    // node.js не вызывает attachOutputSlider автоматически — делаем сами.
+    // Параметры применяются в tick() при рисовании на проектор.
+    this.attachOutputSlider();
+
     // Реагируем на Esc / выход из fullscreen
     document.addEventListener('fullscreenchange', () => {
       if (!this._localPreviewCanvas) return;
@@ -152,11 +158,25 @@ export class ProjectorOutputNode extends Node {
   tick(ctx) {
     const v = ctx.getInputValues(this.id, 'video').filter(isDrawable)[0];
 
+    // Прозрачность и режим наложения — берём из стандартного слайдера ноды
+    const alpha = this.outputAlpha != null ? this.outputAlpha : 1;
+    const blend = this.outputBlend || 'source-over';
+
     // Локальное preview в ноде
     if (this._localPreviewCtx) {
-      this._localPreviewCtx.clearRect(0, 0, this._localPreviewCanvas.width, this._localPreviewCanvas.height);
+      const pw = this._localPreviewCanvas.width;
+      const ph = this._localPreviewCanvas.height;
+      this._localPreviewCtx.globalAlpha = 1;
+      this._localPreviewCtx.globalCompositeOperation = 'source-over';
+      this._localPreviewCtx.clearRect(0, 0, pw, ph);
       if (v) {
-        try { this._localPreviewCtx.drawImage(v, 0, 0, this._localPreviewCanvas.width, this._localPreviewCanvas.height); } catch {}
+        try {
+          this._localPreviewCtx.globalAlpha = alpha;
+          this._localPreviewCtx.globalCompositeOperation = blend;
+          this._localPreviewCtx.drawImage(v, 0, 0, pw, ph);
+          this._localPreviewCtx.globalAlpha = 1;
+          this._localPreviewCtx.globalCompositeOperation = 'source-over';
+        } catch {}
       }
     }
 
@@ -177,13 +197,21 @@ export class ProjectorOutputNode extends Node {
         this._winCanvas.height = h;
       }
       const bgMap = { black: '#000', transparent: 'transparent', dark: '#000000' };
+      this._winCtx.globalAlpha = 1;
+      this._winCtx.globalCompositeOperation = 'source-over';
       if (this.params.bg === 'transparent') {
         this._winCtx.clearRect(0, 0, w, h);
       } else {
         this._winCtx.fillStyle = bgMap[this.params.bg] || '#000';
         this._winCtx.fillRect(0, 0, w, h);
       }
-      try { this._winCtx.drawImage(v, 0, 0, w, h); } catch {}
+      try {
+        this._winCtx.globalAlpha = alpha;
+        this._winCtx.globalCompositeOperation = blend;
+        this._winCtx.drawImage(v, 0, 0, w, h);
+        this._winCtx.globalAlpha = 1;
+        this._winCtx.globalCompositeOperation = 'source-over';
+      } catch {}
     }
   }
 
