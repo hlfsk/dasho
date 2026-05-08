@@ -38,7 +38,7 @@ export function setupPalette(el, btn, onCreate) {
 
 // На touch-устройствах (iPad / iPhone / Android) скрываем ноды что
 // требуют WebMIDI / Web Serial — Apple Safari их не поддерживает.
-const HIDDEN_ON_TOUCH = new Set(['MidiInput', 'SerialIn']);
+const HIDDEN_ON_TOUCH = new Set(['MidiInput', 'SerialIn', 'PlayShare']);
 
 function isTouchOnly() {
   return typeof window !== 'undefined'

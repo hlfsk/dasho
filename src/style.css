@@ -542,10 +542,141 @@ button:active { transform: translateY(0); }
   #fps-mobile-wrap, #stream-btn { display: none !important; }
 }
 
-/* ── 👁 PlayShare FAB — закреплённая нода в левом нижнем углу ────────
-   На mobile/iPad/touch — большой зелёный круг с сокетом по центру.
-   Тяни любой провод от другой ноды → провод приходит сюда → можно делиться. */
+/* ── ▶ play node — вертикальная sticker-кнопка слева на mobile ────── */
 @media (max-width: 1100px) {
+  .play-share-node.mobile-fab { display: none !important; } /* старая FAB убрана */
+}
+#play-node-tab {
+  position: fixed;
+  left: 0;
+  bottom: 30%;
+  z-index: 60;
+  background: var(--yellow);
+  color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, 'Helvetica Neue', sans-serif;
+  font-weight: 900;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  padding: 0.8rem 0.45rem;
+  border: none;
+  border-radius: 0 14px 14px 0;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  box-shadow: 4px 4px 18px rgba(254, 239, 51, 0.35), 4px 4px 0 rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+}
+#play-node-tab:hover { filter: brightness(0.95); }
+@media (min-width: 1101px) {
+  #play-node-tab { display: none; }
+}
+
+/* Bottom sheet с выбором ноды */
+.play-node-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.play-node-modal {
+  background: #1a1d2e;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px 18px 0 0;
+  padding: 0.7rem 0.9rem max(1.2rem, env(safe-area-inset-bottom));
+  width: 100%;
+  max-width: 540px;
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.play-node-handle {
+  width: 40px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  margin: 0 auto 0.7rem;
+}
+.play-node-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--yellow);
+  letter-spacing: 0.03em;
+  text-align: center;
+}
+.play-node-sub {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  text-align: center;
+  margin-bottom: 0.7rem;
+}
+.play-node-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.7rem;
+}
+.play-node-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  text-align: left;
+  font-size: 0.88rem;
+  color: white;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: none;
+}
+.play-node-item.active {
+  background: rgba(0, 255, 127, 0.15);
+  border-color: rgba(0, 255, 127, 0.5);
+  color: #00ff7f;
+  font-weight: 600;
+}
+.play-node-item .pn-icon { font-size: 1.1rem; }
+.play-node-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.pn-action {
+  font-size: 0.92rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: none;
+  border: 1px solid;
+}
+.pn-action:disabled { opacity: 0.4; cursor: not-allowed; }
+.pn-air {
+  background: rgba(0, 255, 127, 0.18);
+  color: #00ff7f;
+  border-color: rgba(0, 255, 127, 0.5);
+}
+.pn-share {
+  background: rgba(106, 166, 255, 0.18);
+  color: #6aa6ff;
+  border-color: rgba(106, 166, 255, 0.45);
+}
+.pn-dl {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Старый блок ниже остаётся (CSS-классы FAB) для случая если кто-то всё-таки
+   создаст PlayShare-ноду из палитры на десктопе — там это нормальный нодовый UI. */
+@media (max-width: 0) {
   .play-share-node.mobile-fab {
     position: fixed !important;
     bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)) !important;

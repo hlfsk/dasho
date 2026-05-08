@@ -2504,30 +2504,185 @@ _tryLoadFromUrl().then((loaded) => {
   createNode('FinalCollage', { x: finX, y });
 }).then(ensureMobilePlayShare);
 
-// На mobile / iPad всегда есть закреплённая PlayShare-нода в левом нижнем
-// углу — большой зелёный сокет, тяни любой видео-провод к ней и делись.
+// На mobile/iPad — вертикальная sticker-кнопка «play node» слева сбоку.
+// Тап → bottom-sheet со списком всех нод графа с видеовыходом → выбираешь
+// одну → меню AirPlay / Share / Download для именно этой ноды.
 function ensureMobilePlayShare() {
   if (!window.matchMedia('(max-width: 1100px)').matches) return;
-  const exists = [...nodes.values()].some(
-    (n) => n.constructor && n.constructor._typeName === 'PlayShare'
-  );
-  if (exists) return;
-  const node = createNode('PlayShare', { x: 20, y: window.innerHeight - 200 });
-  if (node?.el) node.el.classList.add('mobile-fab');
+  if (document.getElementById('play-node-tab')) return;
+
+  const tab = document.createElement('button');
+  tab.id = 'play-node-tab';
+  tab.type = 'button';
+  tab.textContent = 'play node';
+  tab.addEventListener('click', openPlayNodeSheet);
+  document.body.appendChild(tab);
 }
-// Также — каждый раз когда сцена загружается (templates / share / scenes),
-// после её применения проверяем что PlayShare-FAB всё ещё на месте
-const _origDeserialize = deserializeGraph;
-// (Вызов уже заменён выше через eval/import — делаем patch через MutationObserver)
-new MutationObserver(() => {
-  if (!window.matchMedia('(max-width: 1100px)').matches) return;
-  // Помечаем все PlayShare ноды классом FAB
-  for (const n of nodes.values()) {
-    if (n.constructor?._typeName === 'PlayShare') {
-      n.el?.classList.add('mobile-fab');
+
+// Глобальный canvas для AirPlay/share — копируем туда выбранный source
+const _playCanvas = document.createElement('canvas');
+_playCanvas.width = 1280; _playCanvas.height = 720;
+const _playCtx = _playCanvas.getContext('2d');
+let _playSourceNodeId = null;
+let _playStreamVideo = null;
+let _playStream = null;
+
+// Каждый кадр копируем выбранный source в _playCanvas (если выбран)
+function _playTick() {
+  if (!_playSourceNodeId) return;
+  const node = nodes.get(_playSourceNodeId);
+  if (!node) { _playSourceNodeId = null; return; }
+  const out = node.getOutput?.('video');
+  if (!out) return;
+  const w = out.width || out.videoWidth || 1280;
+  const h = out.height || out.videoHeight || 720;
+  if (_playCanvas.width !== w || _playCanvas.height !== h) {
+    _playCanvas.width = w; _playCanvas.height = h;
+  }
+  try { _playCtx.drawImage(out, 0, 0, w, h); } catch {}
+}
+
+function openPlayNodeSheet() {
+  // Закрываем если открыто
+  document.getElementById('play-node-sheet')?.remove();
+
+  // Список нод с видеовыходом
+  const candidates = [...nodes.values()].filter(
+    (n) => (n.outputs || []).some((o) => o.type === 'video')
+  );
+
+  const overlay = document.createElement('div');
+  overlay.id = 'play-node-sheet';
+  overlay.className = 'play-node-overlay';
+  overlay.innerHTML = `
+    <div class="play-node-modal">
+      <div class="play-node-handle"></div>
+      <div class="play-node-title">▶ play node</div>
+      <div class="play-node-sub">выбери источник → стриминг или поделись</div>
+      <div class="play-node-list"></div>
+      <div class="play-node-actions"></div>
+    </div>
+  `;
+  const list = overlay.querySelector('.play-node-list');
+  const actions = overlay.querySelector('.play-node-actions');
+
+  // Ноды-источники
+  if (candidates.length === 0) {
+    list.innerHTML = '<div style="padding:1rem;opacity:0.5;font-size:0.8rem;text-align:center">нет нод с видеовыходом — добавь например Камеру</div>';
+  } else {
+    for (const n of candidates) {
+      const ctor = n.constructor;
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'play-node-item';
+      const icon = ctor.icon || '⬜';
+      const title = ctor.title || ctor._typeName || 'Нода';
+      item.innerHTML = `<span class="pn-icon">${icon}</span><span class="pn-name">${title}</span>`;
+      if (n.id === _playSourceNodeId) item.classList.add('active');
+      item.addEventListener('click', () => {
+        _playSourceNodeId = n.id;
+        list.querySelectorAll('.play-node-item').forEach((b) => b.classList.remove('active'));
+        item.classList.add('active');
+        renderActions();
+      });
+      list.appendChild(item);
     }
   }
-}).observe(document.getElementById('dock'), { childList: true, subtree: false });
+
+  function renderActions() {
+    actions.innerHTML = '';
+    if (!_playSourceNodeId) {
+      actions.innerHTML = '<div style="font-size:0.7rem;opacity:0.5;padding:0.5rem">выбери ноду выше</div>';
+      return;
+    }
+    const supportsAirPlay = typeof document.createElement('video').webkitShowPlaybackTargetPicker === 'function';
+    const air = document.createElement('button');
+    air.type = 'button';
+    air.className = 'pn-action pn-air';
+    air.textContent = supportsAirPlay ? '📺 AirPlay live-стрим' : '📺 AirPlay (Safari iOS / macOS)';
+    air.disabled = !supportsAirPlay;
+    air.addEventListener('click', () => {
+      _playAirPlay();
+      overlay.remove();
+    });
+    const share = document.createElement('button');
+    share.type = 'button';
+    share.className = 'pn-action pn-share';
+    share.textContent = '📤 Поделиться кадром';
+    share.addEventListener('click', () => { _playShare(); overlay.remove(); });
+    const dl = document.createElement('button');
+    dl.type = 'button';
+    dl.className = 'pn-action pn-dl';
+    dl.textContent = '📥 Скачать кадр';
+    dl.addEventListener('click', () => { _playDownload(); overlay.remove(); });
+    actions.appendChild(air);
+    actions.appendChild(share);
+    actions.appendChild(dl);
+  }
+  renderActions();
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+  document.body.appendChild(overlay);
+}
+
+async function _playAirPlay() {
+  try {
+    if (!_playStreamVideo) {
+      _playStreamVideo = document.createElement('video');
+      _playStreamVideo.muted = true;
+      _playStreamVideo.autoplay = true;
+      _playStreamVideo.playsInline = false;
+      _playStreamVideo.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:0;top:0';
+      _playStreamVideo.setAttribute('x-webkit-airplay', 'allow');
+      document.body.appendChild(_playStreamVideo);
+    }
+    if (!_playStream && _playCanvas.captureStream) {
+      _playStream = _playCanvas.captureStream(30);
+      _playStreamVideo.srcObject = _playStream;
+      await _playStreamVideo.play().catch(() => {});
+    }
+    if (_playStreamVideo.webkitShowPlaybackTargetPicker) {
+      _playStreamVideo.webkitShowPlaybackTargetPicker();
+      toast('📺 выбери Apple TV или повтор экрана');
+    } else {
+      toast('✗ AirPlay недоступен в этом браузере');
+    }
+  } catch (e) {
+    toast('✗ ' + (e.message || e));
+  }
+}
+
+async function _playShare() {
+  const blob = await new Promise((res) => _playCanvas.toBlob(res, 'image/png'));
+  if (!blob) return;
+  const file = new File([blob], 'dasho-show.png', { type: 'image/png' });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: 'DÄSHO', text: 'Кадр из моего шоу' });
+      toast('✓ отправлено');
+    } catch (e) {
+      if (e.name !== 'AbortError') toast('✗ ' + (e.message || e));
+    }
+  } else {
+    _playDownload(blob);
+  }
+}
+
+function _playDownload(blob) {
+  const finish = (b) => {
+    const url = URL.createObjectURL(b);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dasho-${Date.now()}.png`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast('📥 скачано');
+  };
+  if (blob) return finish(blob);
+  _playCanvas.toBlob((b) => b && finish(b), 'image/png');
+}
 
 // ── Главный цикл (60 fps) ───────────────────────────────────────────────
 
@@ -2664,6 +2819,9 @@ function tickFrame() {
         }
       }
     }
+
+    // ── play node — копируем выбранный source в _playCanvas (для AirPlay/share) ──
+    try { _playTick(); } catch {}
 
     // ── Master Fade overlay (всё в чёрный) ──
     const fadeEl = document.getElementById('master-fade');
