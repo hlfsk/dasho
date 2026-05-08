@@ -45,44 +45,61 @@ export class PlayShareNode extends Node {
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;flex-direction:column;gap:0.5rem;margin-top:0.2rem';
 
-    // Главная — поделиться кадром через native iOS share
+    // === ГЛАВНАЯ КНОПКА — AirPlay live-стрим на телевизор ===
+    // Проверяем поддержку (iOS Safari / macOS Safari)
+    const supportsAirPlay = typeof document.createElement('video').webkitShowPlaybackTargetPicker === 'function';
+
+    const airBtn = document.createElement('button');
+    airBtn.type = 'button';
+    airBtn.textContent = supportsAirPlay
+      ? '📺 Стрим на AirPlay'
+      : '📺 AirPlay (только Safari iOS / macOS)';
+    airBtn.disabled = !supportsAirPlay;
+    airBtn.style.cssText = 'font-size:1rem;padding:0.85rem 0.9rem;background:rgba(0,255,127,0.18);color:#00ff7f;border:1.5px solid rgba(0,255,127,0.55);box-shadow:0 4px 18px rgba(0,255,127,0.25);font-weight:700;border-radius:12px';
+    if (!supportsAirPlay) airBtn.style.opacity = '0.5';
+    airBtn.addEventListener('click', () => this.airplay());
+
+    const airHint = document.createElement('div');
+    airHint.style.cssText = 'font-size:0.65rem;opacity:0.6;line-height:1.4';
+    airHint.innerHTML = supportsAirPlay
+      ? '<b>Live-стрим</b> содержимого этой ноды → выбираешь Apple TV / Smart TV → видео идёт туда в реальном времени.'
+      : 'AirPlay live-стрим работает только в Safari на iPhone / iPad / Mac.';
+
+    // === Маленькие secondary кнопки — снимок одного кадра ===
+    const sep = document.createElement('div');
+    sep.style.cssText = 'border-top:1px solid rgba(255,255,255,0.08);margin:0.5rem 0 0.2rem;padding-top:0.4rem';
+    const sepLbl = document.createElement('div');
+    sepLbl.style.cssText = 'font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;opacity:0.45;font-weight:600';
+    sepLbl.textContent = 'снимок одного кадра';
+    sep.appendChild(sepLbl);
+
+    const snapRow = document.createElement('div');
+    snapRow.style.cssText = 'display:flex;gap:0.35rem';
     const shareBtn = document.createElement('button');
     shareBtn.type = 'button';
-    shareBtn.textContent = '📤 Поделиться кадром';
-    shareBtn.style.cssText = 'font-size:0.9rem;padding:0.6rem 0.8rem;background:rgba(106,166,255,0.22);color:#6aa6ff;border:1px solid rgba(106,166,255,0.45);box-shadow:none;font-weight:600';
+    shareBtn.textContent = '📤 поделиться';
+    shareBtn.title = 'Снимок текущего кадра → AirDrop / Messages / WhatsApp';
+    shareBtn.style.cssText = 'font-size:0.72rem;padding:0.4rem 0.55rem;background:rgba(106,166,255,0.15);color:#6aa6ff;border:1px solid rgba(106,166,255,0.3);box-shadow:none;flex:1';
     shareBtn.addEventListener('click', () => this.shareFrame());
-
-    // AirPlay — только если есть API (Safari iOS / macOS)
-    let airBtn = null;
-    if (typeof document.createElement('video').webkitShowPlaybackTargetPicker === 'function') {
-      airBtn = document.createElement('button');
-      airBtn.type = 'button';
-      airBtn.textContent = '📺 AirPlay / повтор экрана';
-      airBtn.style.cssText = 'font-size:0.85rem;padding:0.55rem 0.8rem;background:rgba(254,239,51,0.18);color:var(--yellow);border:1px solid rgba(254,239,51,0.4);box-shadow:none';
-      airBtn.addEventListener('click', () => this.airplay());
-    }
-
-    // Fallback — скачать
     const dlBtn = document.createElement('button');
     dlBtn.type = 'button';
-    dlBtn.textContent = '📥 Скачать кадр';
-    dlBtn.style.cssText = 'font-size:0.78rem;padding:0.45rem 0.6rem;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.12);box-shadow:none';
+    dlBtn.textContent = '📥 скачать';
+    dlBtn.style.cssText = 'font-size:0.72rem;padding:0.4rem 0.55rem;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.1);box-shadow:none';
     dlBtn.addEventListener('click', () => this.downloadFrame());
+    snapRow.appendChild(shareBtn);
+    snapRow.appendChild(dlBtn);
 
+    // Status
     const status = document.createElement('div');
     status.style.cssText = 'font-size:0.7rem;opacity:0.7';
     status.textContent = 'жду видео-вход…';
     this.statusEl = status;
 
-    const hint = document.createElement('div');
-    hint.style.cssText = 'font-size:0.62rem;opacity:0.55;line-height:1.4';
-    hint.innerHTML = 'Подключи любой источник → этот узел захватит кадр и откроет нативное меню iPhone (AirDrop, Messages, WhatsApp, ВКонтакте, …).';
-
-    wrap.appendChild(shareBtn);
-    if (airBtn) wrap.appendChild(airBtn);
-    wrap.appendChild(dlBtn);
+    wrap.appendChild(airBtn);
+    wrap.appendChild(airHint);
+    wrap.appendChild(sep);
+    wrap.appendChild(snapRow);
     wrap.appendChild(status);
-    wrap.appendChild(hint);
     this.bodyEl.prepend(wrap);
   }
 
