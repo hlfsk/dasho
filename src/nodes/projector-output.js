@@ -54,27 +54,75 @@ export class ProjectorOutputNode extends Node {
     lbl.style.cssText = 'font-size:0.6rem;text-transform:uppercase;letter-spacing:0.05em;opacity:0.55;font-weight:600';
     lbl.textContent = 'превью того что пойдёт на проектор';
 
-    const btn = document.createElement('button');
-    btn.textContent = '📺 Открыть окно проектора';
-    btn.type = 'button';
-    btn.style.cssText = 'font-size:0.78rem;padding:0.4rem 0.6rem';
-    btn.addEventListener('click', () => this.openWindow());
+    // Кнопка fullscreen — самый частый сценарий
+    const fsBtn = document.createElement('button');
+    fsBtn.textContent = '📺 На проектор (fullscreen)';
+    fsBtn.type = 'button';
+    fsBtn.style.cssText = 'font-size:0.85rem;padding:0.55rem 0.7rem;background:rgba(254,239,51,0.18);color:var(--yellow);border:1px solid rgba(254,239,51,0.4);box-shadow:none';
+    fsBtn.addEventListener('click', () => this.toggleFullscreen());
+    this.fsBtn = fsBtn;
 
-    const hint = document.createElement('div');
-    hint.style.cssText = 'font-size:0.62rem;opacity:0.55;line-height:1.4';
-    hint.innerHTML = 'Открой окно → перетащи на проектор → ⌘⌃F (fullscreen). Закрой окно — отключится.';
+    const fsHint = document.createElement('div');
+    fsHint.style.cssText = 'font-size:0.62rem;opacity:0.55;line-height:1.4';
+    fsHint.innerHTML = 'Один монитор / iPad — fullscreen. Esc — выход.<br>Два монитора — используй ↓ окно и перетащи его.';
+
+    // Кнопка для второго монитора
+    const winBtn = document.createElement('button');
+    winBtn.textContent = '🪟 Открыть в отдельном окне (для 2-го монитора)';
+    winBtn.type = 'button';
+    winBtn.style.cssText = 'font-size:0.78rem;padding:0.4rem 0.6rem;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.12);box-shadow:none';
+    winBtn.addEventListener('click', () => this.openWindow());
+
+    const winHint = document.createElement('div');
+    winHint.style.cssText = 'font-size:0.62rem;opacity:0.55;line-height:1.4';
+    winHint.innerHTML = 'Если браузер заблокирует popup — нажми «Разрешить» в адресной строке и кликни ещё раз.<br>В окне на проекторе нажми ⌘⌃F (Mac) для fullscreen.';
 
     const status = document.createElement('div');
     status.style.cssText = 'font-size:0.7rem;opacity:0.7';
-    status.textContent = 'окно не открыто';
+    status.textContent = '';
     this.statusEl = status;
 
     wrap.appendChild(previewWrap);
     wrap.appendChild(lbl);
-    wrap.appendChild(btn);
-    wrap.appendChild(hint);
+    wrap.appendChild(fsBtn);
+    wrap.appendChild(fsHint);
+    wrap.appendChild(winBtn);
+    wrap.appendChild(winHint);
     wrap.appendChild(status);
     this.bodyEl.prepend(wrap);
+
+    // Реагируем на Esc / выход из fullscreen
+    document.addEventListener('fullscreenchange', () => {
+      if (!this._localPreviewCanvas) return;
+      const active = document.fullscreenElement === this._localPreviewCanvas;
+      if (this.fsBtn) {
+        this.fsBtn.textContent = active
+          ? '✕ Выйти из проектора'
+          : '📺 На проектор (fullscreen)';
+      }
+    });
+  }
+
+  async toggleFullscreen() {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        // Используем локальный preview как fullscreen-канвас
+        // (его _localPreviewCtx обновляется в tick() — будет полное видео)
+        const target = this._localPreviewCanvas;
+        if (!target) return;
+        // Перед fullscreen увеличим разрешение чтобы было чётко
+        target.width = 1920;
+        target.height = 1080;
+        await target.requestFullscreen();
+      }
+    } catch (e) {
+      if (this.statusEl) {
+        this.statusEl.textContent = '✗ ' + (e.message || e);
+        this.statusEl.style.color = '#ff4d2e';
+      }
+    }
   }
 
   openWindow() {
@@ -82,9 +130,9 @@ export class ProjectorOutputNode extends Node {
       this._win.focus();
       return;
     }
-    const w = window.open('', `lups-projector-${this.id}`, 'width=1280,height=720');
+    const w = window.open('', `lups-projector-${this.id}`, 'width=1280,height=720,popup=yes');
     if (!w) {
-      this.statusEl.textContent = '✗ заблокировано — разреши всплывающие окна';
+      this.statusEl.textContent = '✗ браузер заблокировал окно. Нажми иконку (🚫) в адресной строке → «Разрешить всплывающие окна» → кликни ещё раз';
       this.statusEl.style.color = '#ff4d2e';
       return;
     }

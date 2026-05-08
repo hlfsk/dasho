@@ -871,6 +871,27 @@ details.node[open] .node-arrow { transform: rotate(180deg); }
   background: rgba(255, 255, 255, 0.08);
 }
 
+/* ── Режим «проектор»: скрываем весь UI, остаётся только stage ──────── */
+body.projector-mode #dock,
+body.projector-mode #dots-bg,
+body.projector-mode #wires,
+body.projector-mode #brand,
+body.projector-mode .header-left,
+body.projector-mode .header-right,
+body.projector-mode #scene-bar,
+body.projector-mode #history-bar,
+body.projector-mode #statusbar,
+body.projector-mode #hint,
+body.projector-mode #palette,
+body.projector-mode #toast,
+body.projector-mode #feedback-btn {
+  display: none !important;
+}
+body.projector-mode #stage {
+  z-index: 9999 !important;
+}
+body.projector-mode { cursor: none; }
+
 /* ── Кнопка «📝 Фидбек» — левый нижний угол ──────────────────────── */
 #feedback-btn {
   position: fixed;

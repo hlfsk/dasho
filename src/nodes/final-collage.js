@@ -3,6 +3,7 @@
 
 import { Node } from '../node.js?v=26';
 import { isDrawable, intrinsicSize } from '../util.js';
+import { t } from '../i18n.js';
 
 export class FinalCollageNode extends Node {
   static title = 'Финальный коллаж';
@@ -25,6 +26,58 @@ export class FinalCollageNode extends Node {
           { value: 'stretch', label: 'растянуть' },
         ] },
     ];
+  }
+
+  init() {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;gap:0.4rem;margin-top:0.2rem';
+
+    const btn = document.createElement('button');
+    btn.textContent = t('fc.projector', '📺 На проектор (fullscreen)');
+    btn.type = 'button';
+    btn.style.cssText = 'font-size:0.85rem;padding:0.55rem 0.7rem;background:rgba(254,239,51,0.18);color:var(--yellow);border:1px solid rgba(254,239,51,0.4);box-shadow:none';
+    btn.addEventListener('click', () => this.toggleProjector());
+    this.projBtn = btn;
+
+    const hint = document.createElement('div');
+    hint.style.cssText = 'font-size:0.62rem;opacity:0.55;line-height:1.4';
+    hint.innerHTML = t('fc.projector-hint', 'Спрячет интерфейс и развернёт коллаж на весь экран. На проекторе — выбери в System Settings → Displays режим «Mirror» или «Extend» с этим экраном. <b>Esc</b> — выход.');
+
+    const status = document.createElement('div');
+    status.style.cssText = 'font-size:0.7rem;opacity:0.7';
+    status.textContent = '';
+    this.statusEl = status;
+
+    wrap.appendChild(btn);
+    wrap.appendChild(hint);
+    wrap.appendChild(status);
+    this.bodyEl.prepend(wrap);
+
+    // Реагируем на выход из fullscreen (Esc)
+    document.addEventListener('fullscreenchange', () => {
+      const active = !!document.fullscreenElement;
+      document.body.classList.toggle('projector-mode', active);
+      if (this.projBtn) {
+        this.projBtn.textContent = active
+          ? t('fc.projector-exit', '✕ Выйти из проектора')
+          : t('fc.projector', '📺 На проектор (fullscreen)');
+      }
+    });
+  }
+
+  async toggleProjector() {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (e) {
+      if (this.statusEl) {
+        this.statusEl.textContent = '✗ ' + (e.message || e);
+        this.statusEl.style.color = '#ff4d2e';
+      }
+    }
   }
 
   tick(ctx) {
