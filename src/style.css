@@ -242,22 +242,29 @@ button:active { transform: translateY(0); }
   #master-fade { width: 48px; }
 }
 
-/* ── 📱 Mobile portrait — раскладка по эскизу пользователя ──────────────
-   Top:    [DÄSHO] · [↶ □ ↷] · [⊕]
-   Left:   ○○○○○ (5 сцен в столбик)
-   Right:  ▌FADE (вертикальный слайдер)
-   Bottom: 📝  📚  ●REC  🗑  fps
-   Center: канвас с нодами */
+/* ── 📱 Mobile portrait — финальный layout по эскизу ─────────────────
+   Top:    [DÄSHO] · ↶□↷ · [⊕]   (с большим отступом от Safari URL bar)
+   Left:   ▌ FADE   (вертикальный слайдер прозрачности)
+   Bottom-left угол:  📝
+   Bottom-row plot:   📚 ● 🗑 [fps] [🔗]
+   Сцены, cookbook, импорт/экспорт скрыты. */
 @media (max-width: 600px) {
-  /* Скрываем шумное */
-  #hint, #statusbar, #cookbook-add-btn { display: none !important; }
+  /* Скрываем всё лишнее */
+  #hint, #statusbar, #cookbook-add-btn, #scene-bar { display: none !important; }
+  /* Прячем кнопки импорта/экспорта сцены если есть в DOM */
+  #scene-import-btn, #scene-export-btn { display: none !important; }
+
+  /* Все три верхних элемента — на одном уровне, отступ от Safari URL bar.
+     env(safe-area-inset-top) = 0 в Safari (URL bar скрывает свой регион),
+     поэтому ставим жёсткие 1rem чтобы было точно видно под адресной строкой. */
+  --top-row: max(1rem, calc(env(safe-area-inset-top, 0px) + 0.4rem));
 
   /* === TOP-LEFT: лого DÄSHO === */
   #brand,
   #brand::before { font-size: 0.85rem !important; padding: 0 !important; content: normal !important; }
   #brand {
     position: fixed !important;
-    top: max(0.7rem, env(safe-area-inset-top, 0.7rem)) !important;
+    top: var(--top-row) !important;
     left: 0.7rem !important;
     right: auto !important;
     bottom: auto !important;
@@ -269,11 +276,11 @@ button:active { transform: translateY(0); }
   }
   #brand::before { display: none !important; }
 
-  /* === TOP-CENTER: History bar (↶ pos ↷ │ 💾 │ ↩) === */
+  /* === TOP-CENTER: History bar === */
   #history-bar {
     display: flex !important;
     position: fixed !important;
-    top: max(0.7rem, env(safe-area-inset-top, 0.7rem)) !important;
+    top: var(--top-row) !important;
     bottom: auto !important;
     left: 50% !important;
     right: auto !important;
@@ -285,10 +292,10 @@ button:active { transform: translateY(0); }
   #history-bar button { width: 1.9rem !important; height: 1.9rem !important; padding: 0 !important; font-size: 0.95rem !important; }
   #history-bar .pos { font-size: 0.65rem !important; padding: 0 0.15rem !important; }
 
-  /* === TOP-RIGHT: ⊕ кнопка добавить ноду (она же палитра) === */
+  /* === TOP-RIGHT: ⊕ кнопка добавить ноду === */
   .header-left {
     position: fixed !important;
-    top: max(0.7rem, env(safe-area-inset-top, 0.7rem)) !important;
+    top: var(--top-row) !important;
     bottom: auto !important;
     left: auto !important;
     right: 0.7rem !important;
@@ -332,54 +339,21 @@ button:active { transform: translateY(0); }
     line-height: 1;
   }
 
-  /* === LEFT: 5 круглых кнопок-сцен в столбик === */
-  #scene-bar {
+  /* === LEFT: вертикальный FADE-слайдер (вместо сцен) === */
+  #master-fade-wrap {
     display: flex !important;
-    flex-direction: column !important;
+    flex-direction: column-reverse !important;
     position: fixed !important;
     left: 0.5rem !important;
     right: auto !important;
     top: 50% !important;
     bottom: auto !important;
     transform: translateY(-50%) !important;
-    padding: 0.4rem 0.3rem !important;
-    gap: 0.3rem !important;
-    background: rgba(0, 0, 0, 0.45) !important;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-radius: 22px !important;
-    z-index: 55 !important;
-  }
-  #scene-bar .lab,
-  #scene-bar .slots-clear,
-  /* Скрываем сцены 6-9 — на эскизе только 5 */
-  #scene-bar .slot[data-i="6"],
-  #scene-bar .slot[data-i="7"],
-  #scene-bar .slot[data-i="8"],
-  #scene-bar .slot[data-i="9"] { display: none !important; }
-  #scene-bar .slot {
-    width: 2rem !important;
-    height: 2rem !important;
-    border-radius: 50% !important;
-    padding: 0 !important;
-    font-size: 0.78rem !important;
-    margin: 0 !important;
-  }
-
-  /* === RIGHT: FADE — вертикальный слайдер === */
-  #master-fade-wrap {
-    display: flex !important;
-    flex-direction: column-reverse !important;
-    position: fixed !important;
-    right: 0.5rem !important;
-    left: auto !important;
-    top: 50% !important;
-    bottom: auto !important;
-    transform: translateY(-50%) !important;
-    height: 11rem !important;
-    width: 2.4rem !important;
+    height: 12rem !important;
+    width: 2.6rem !important;
     padding: 0.6rem 0.3rem !important;
-    background: rgba(0, 0, 0, 0.45) !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 22px !important;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
@@ -387,11 +361,13 @@ button:active { transform: translateY(0); }
     z-index: 55 !important;
   }
   #master-fade-wrap .lab {
+    display: inline !important;
     font-size: 0.55rem !important;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
     margin-bottom: 0.3rem;
-    display: inline !important;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.15em;
   }
   #master-fade {
     -webkit-appearance: slider-vertical;
@@ -400,34 +376,36 @@ button:active { transform: translateY(0); }
     direction: rtl;
     width: 6px !important;
     height: 100% !important;
+    flex: 1;
   }
 
-  /* === BOTTOM: 📝  📚  ●REC  🗑  fps === */
-  /* Делаем нижнюю плашку из feedback + переброшенных сюда templates/rec/clear + fps */
+  /* === BOTTOM-LEFT угол: 📝 фидбек === */
   #feedback-btn {
     position: fixed !important;
     bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
     top: auto !important;
-    left: calc(50% - 7.5rem) !important;
+    left: 0.7rem !important;
     right: auto !important;
-    width: 2.4rem !important;
-    height: 2.4rem !important;
+    width: 2.6rem !important;
+    height: 2.6rem !important;
     font-size: 1rem !important;
     background: rgba(0, 0, 0, 0.55) !important;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     z-index: 60;
   }
-  /* Templates вытаскиваем из header-left на mobile, ставим в нижнюю плашку как fixed */
+
+  /* === BOTTOM-CENTER: 📚 ● 🗑 fps 🔗 — прижато к низу === */
+  /* Templates */
   #templates-btn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
     position: fixed !important;
     bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    left: calc(50% - 4.4rem) !important;
-    width: 2.4rem !important;
-    height: 2.4rem !important;
+    left: calc(50% - 5.6rem) !important;
+    width: 2.6rem !important;
+    height: 2.6rem !important;
     padding: 0 !important;
     border-radius: 50% !important;
     background: rgba(196, 168, 255, 0.22) !important;
@@ -436,16 +414,17 @@ button:active { transform: translateY(0); }
     font-size: 0 !important;
     z-index: 60;
   }
-  #templates-btn::before { content: '📚'; font-size: 1.2rem; }
+  #templates-btn::before { content: '📚'; font-size: 1.3rem; }
+  /* REC */
   #rec-btn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
     position: fixed !important;
     bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    left: calc(50% - 1.2rem) !important;
-    width: 2.4rem !important;
-    height: 2.4rem !important;
+    left: calc(50% - 2.4rem) !important;
+    width: 2.6rem !important;
+    height: 2.6rem !important;
     padding: 0 !important;
     border-radius: 50% !important;
     background: rgba(255, 77, 46, 0.22) !important;
@@ -454,63 +433,69 @@ button:active { transform: translateY(0); }
     font-size: 0 !important;
     z-index: 60;
   }
-  #rec-btn::before { content: '●'; font-size: 1.4rem; color: #ff4d2e; }
+  #rec-btn::before { content: '●'; font-size: 1.5rem; color: #ff4d2e; }
+  /* Clear */
   #clear-all-btn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
     position: fixed !important;
     bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    left: calc(50% + 2rem) !important;
-    width: 2.4rem !important;
-    height: 2.4rem !important;
+    left: calc(50% + 0.8rem) !important;
+    width: 2.6rem !important;
+    height: 2.6rem !important;
     padding: 0 !important;
     border-radius: 50% !important;
     color: transparent !important;
     font-size: 0 !important;
     z-index: 60;
   }
-  #clear-all-btn::before { content: '🗑'; font-size: 1.2rem; }
-  /* Share переезжает в bottom-row слева от центра */
+  #clear-all-btn::before { content: '🗑'; font-size: 1.3rem; }
+  /* FPS — крупный, жёлтый, заметный */
+  .header-right {
+    display: flex !important;
+    position: fixed !important;
+    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
+    top: auto !important;
+    left: calc(50% + 4rem) !important;
+    right: auto !important;
+    z-index: 60;
+  }
+  .header-right #fullscreen-btn,
+  .header-right #lang-btn { display: none !important; }
+  #fps-select {
+    height: 2.6rem !important;
+    min-width: 4.2rem !important;
+    border-radius: 999px !important;
+    padding: 0 0.7rem !important;
+    font-size: 0.78rem !important;
+    font-weight: 700 !important;
+    background: var(--yellow) !important;
+    color: #000 !important;
+    border: 1px solid rgba(254, 239, 51, 0.5) !important;
+    box-shadow: 0 4px 14px rgba(254, 239, 51, 0.4) !important;
+    appearance: none;
+    -webkit-appearance: none;
+    text-align: center;
+  }
+  /* Share — справа от FPS */
   #share-btn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
     position: fixed !important;
     bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    left: calc(50% - 7.5rem - 3rem) !important;
-    width: 2.4rem !important;
-    height: 2.4rem !important;
+    right: 0.7rem !important;
+    left: auto !important;
+    width: 2.6rem !important;
+    height: 2.6rem !important;
     padding: 0 !important;
     border-radius: 50% !important;
     color: transparent !important;
     font-size: 0 !important;
     z-index: 60;
   }
-  #share-btn::before { content: '🔗'; font-size: 1.1rem; }
-  /* FPS селектор — справа */
-  .header-right {
-    display: flex !important;
-    position: fixed !important;
-    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    top: auto !important;
-    right: calc(50% - 7.5rem) !important;
-    left: auto !important;
-    z-index: 60;
-    flex-direction: row;
-    gap: 0.3rem;
-  }
-  .header-right #fullscreen-btn,
-  .header-right #lang-btn { display: none !important; }
-  #fps-select {
-    height: 2.4rem !important;
-    border-radius: 999px !important;
-    padding: 0 0.55rem !important;
-    font-size: 0.7rem !important;
-    background: rgba(0, 0, 0, 0.55) !important;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-  }
+  #share-btn::before { content: '🔗'; font-size: 1.2rem; }
 
   /* === Палитра — bottom-sheet (когда нажата ⊕ сверху) === */
   #palette {
