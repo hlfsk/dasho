@@ -984,18 +984,74 @@ document.body.appendChild(importInput);
 const exportBtn = document.createElement('button');
 exportBtn.type = 'button';
 exportBtn.className = 'slots-export';
+exportBtn.id = 'scene-export-btn';
 exportBtn.title = 'Скачать текущую сцену файлом';
-exportBtn.textContent = '📥';
+exportBtn.textContent = '⬆';
 exportBtn.addEventListener('click', downloadScene);
 const importBtn = document.createElement('button');
 importBtn.type = 'button';
 importBtn.className = 'slots-export';
+importBtn.id = 'scene-import-btn';
 importBtn.title = 'Загрузить сцену из файла';
-importBtn.textContent = '📤';
+importBtn.textContent = '⬇';
 importBtn.addEventListener('click', () => importInput.click());
 const sceneBar = document.getElementById('scene-bar');
 sceneBar?.appendChild(exportBtn);
 sceneBar?.appendChild(importBtn);
+
+// ─── Mobile-only: кнопка «👁 стрим» (fullscreen без UI) и ←FPS→ ───
+{
+  // Кнопка «стрим» — переключает body.projector-mode + fullscreen
+  const streamBtn = document.createElement('button');
+  streamBtn.id = 'stream-btn';
+  streamBtn.type = 'button';
+  streamBtn.title = 'Стрим — fullscreen без UI';
+  streamBtn.textContent = '👁';
+  streamBtn.addEventListener('click', async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch {}
+  });
+  document.body.appendChild(streamBtn);
+
+  // ←FPS→ обёртка с двумя кнопками — меняют fps-select циклически
+  const fpsValues = ['auto', '120', '60', '30'];
+  const wrap = document.createElement('div');
+  wrap.id = 'fps-mobile-wrap';
+  const prev = document.createElement('button');
+  prev.type = 'button';
+  prev.id = 'fps-prev';
+  prev.textContent = '◀';
+  const label = document.createElement('span');
+  label.id = 'fps-mobile-label';
+  const next = document.createElement('button');
+  next.type = 'button';
+  next.id = 'fps-next';
+  next.textContent = '▶';
+  wrap.appendChild(prev);
+  wrap.appendChild(label);
+  wrap.appendChild(next);
+  document.body.appendChild(wrap);
+
+  function refreshLabel() {
+    const sel = document.getElementById('fps-select');
+    const v = sel?.value || 'auto';
+    label.textContent = v === 'auto' ? 'fps:auto' : `fps:${v}`;
+  }
+  function step(d) {
+    const sel = document.getElementById('fps-select');
+    if (!sel) return;
+    const i = fpsValues.indexOf(sel.value);
+    const ni = (i + d + fpsValues.length) % fpsValues.length;
+    sel.value = fpsValues[ni];
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    refreshLabel();
+  }
+  prev.addEventListener('click', () => step(-1));
+  next.addEventListener('click', () => step(1));
+  refreshLabel();
+}
 
 // ─────────────────────────────────────────────────────────────────────────
 // 📚 ГОТОВЫЕ ШОУ (темплейты сцен)

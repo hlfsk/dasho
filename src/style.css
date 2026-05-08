@@ -242,60 +242,79 @@ button:active { transform: translateY(0); }
   #master-fade { width: 48px; }
 }
 
-/* ── 📱 Mobile portrait — финальный layout по эскизу ─────────────────
-   Top:    [DÄSHO] · ↶□↷ · [⊕]   (с большим отступом от Safari URL bar)
-   Left:   ▌ FADE   (вертикальный слайдер прозрачности)
-   Bottom-left угол:  📝
-   Bottom-row plot:   📚 ● 🗑 [fps] [🔗]
-   Сцены, cookbook, импорт/экспорт скрыты. */
+/* ── 📱 Mobile portrait — раскладка по новому эскизу ──────────────────
+   Top:    ⬇ ЗАГРУЗ · [DASHO] · [⊕]
+   Left:   ⬆ ВЫГРУЗ · ▌ FADE
+   Bottom: 👁 СТРИМ · ◀FPS:30▶ · 🗑
+   Кнопки — голые эмодзи без обводки, на тёмном фоне. */
 @media (max-width: 600px) {
-  /* Скрываем всё лишнее. Блокнот (📝 фидбек) тоже скрыт по запросу. */
-  #hint, #statusbar, #cookbook-add-btn, #scene-bar, #feedback-btn { display: none !important; }
-  /* Прячем кнопки импорта/экспорта сцены если есть в DOM */
-  #scene-import-btn, #scene-export-btn { display: none !important; }
+  /* Скрываем всё что не на эскизе */
+  #hint, #statusbar, #cookbook-add-btn,
+  #feedback-btn, #history-bar,
+  #templates-btn, #rec-btn, #share-btn,
+  /* Сцены 1-9 и заголовок «Сцены» скрываем, но контейнер scene-bar не скрываем —
+     внутри живут import/export-кнопки которые нам нужны (мы их вынесем через position:fixed) */
+  #scene-bar > .lab,
+  #scene-bar > .slot,
+  #scene-bar > .slots-clear { display: none !important; }
+  /* Сам контейнер scene-bar — невидимая обёртка (без фона/рамки/тени) */
+  #scene-bar {
+    background: transparent !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    pointer-events: none !important; /* клики проходят насквозь, дети им вернут pointer-events */
+  }
+  #scene-bar > * { pointer-events: auto; }
+  /* fullscreen-кнопку (была в шапке) прячем — заменяется на 👁 стрим */
+  #fullscreen-btn, #lang-btn { display: none !important; }
+  /* fps-select (нативный) прячется — вместо него кастомный ◀FPS:30▶ */
+  #fps-select { display: none !important; }
 
-  /* === TOP-LEFT: лого DÄSHO — крупный, заметный === */
+  /* === Универсальный стиль mobile-кнопок: эмодзи без обводки === */
+  /* Применяется к нашим переехавшим кнопкам */
   #brand,
   #brand::before { font-size: 1.05rem !important; padding: 0 !important; content: normal !important; }
+
+  /* === TOP-CENTER: лого DASHO в овале === */
   #brand {
     position: fixed !important;
     top: 1rem !important;
-    left: 0.7rem !important;
+    left: 50% !important;
     right: auto !important;
     bottom: auto !important;
-    transform: rotate(-3deg) !important;
-    padding: 0.5rem 1rem !important;
-    box-shadow: 0 4px 18px rgba(254, 239, 51, 0.45) !important;
+    transform: translateX(-50%) !important;
+    padding: 0.5rem 1.1rem !important;
+    box-shadow: 0 4px 20px rgba(254, 239, 51, 0.45) !important;
     z-index: 60 !important;
     white-space: nowrap;
   }
   #brand::before { display: none !important; }
 
-  /* === TOP-CENTER: History bar (↶ 1/1 ↷ 💾 ↩) === */
-  #history-bar {
-    display: flex !important;
+  /* === TOP-LEFT: ⬇ Загрузить === */
+  #scene-import-btn,
+  #scene-export-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
     position: fixed !important;
-    top: 1rem !important;
-    bottom: auto !important;
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
-    z-index: 60 !important;
-    padding: 0.25rem 0.45rem !important;
-    gap: 0.25rem !important;
-  }
-  #history-bar button {
-    width: 2.1rem !important;
-    height: 2.1rem !important;
+    width: 2.6rem !important;
+    height: 2.6rem !important;
     padding: 0 !important;
-    font-size: 1.1rem !important;
-    color: rgba(255, 255, 255, 0.95) !important;
-    background: rgba(255, 255, 255, 0.08) !important;
-    border-radius: 50% !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-size: 1.6rem !important;
+    z-index: 60 !important;
   }
-  #history-bar button:disabled { color: rgba(255, 255, 255, 0.3) !important; }
-  #history-bar .pos { font-size: 0.7rem !important; padding: 0 0.2rem !important; color: var(--yellow) !important; }
-  #history-bar .sep { display: none !important; }
+  #scene-import-btn {
+    top: 1rem !important;
+    left: 0.7rem !important;
+    right: auto !important;
+    bottom: auto !important;
+  }
 
   /* === TOP-RIGHT: ⊕ кнопка добавить ноду === */
   .header-left {
@@ -316,49 +335,60 @@ button:active { transform: translateY(0); }
     padding: 0 !important;
     box-shadow: none !important;
   }
-  /* Кнопки внутри header-left которые мы перетаскиваем в другие места —
-     НЕ скрываем (иначе override через #ID не победит .header-left > #ID).
-     Они переезжают через position:fixed ниже. */
-  /* Палитра — круглый ⊕, жёлтый */
+  /* === TOP-RIGHT: ⊕ кнопка добавить ноду === */
   #palette-btn {
-    width: 2.4rem !important;
-    height: 2.4rem !important;
+    width: 2.6rem !important;
+    height: 2.6rem !important;
     padding: 0 !important;
     border-radius: 50% !important;
-    background: var(--yellow) !important;
-    color: #000 !important;
-    box-shadow: 0 4px 16px rgba(254, 239, 51, 0.4) !important;
+    background: rgba(254, 239, 51, 0.22) !important;
+    color: var(--yellow) !important;
+    box-shadow: 0 4px 16px rgba(254, 239, 51, 0.3) !important;
     border: 1px solid rgba(254, 239, 51, 0.5) !important;
-    font-size: 0 !important;
+    font-size: 1.6rem !important;
+    line-height: 1 !important;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
   }
-  #palette-btn::before {
-    content: '+';
-    font-size: 1.7rem;
-    font-weight: 900;
-    line-height: 1;
+  #palette-btn::before { content: '⊕'; font-weight: 900; }
+
+  /* === LEFT-MIDDLE: ⬆ Выгрузить === */
+  #scene-export-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    position: fixed !important;
+    left: 0.5rem !important;
+    right: auto !important;
+    top: 32% !important;
+    bottom: auto !important;
+    width: 2.6rem !important;
+    height: 2.6rem !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-size: 1.5rem !important;
+    z-index: 55 !important;
   }
 
-  /* === LEFT: вертикальный FADE-слайдер (вместо сцен) === */
+  /* === LEFT: вертикальный FADE-слайдер — без рамки, голый === */
   #master-fade-wrap {
     display: flex !important;
     flex-direction: column-reverse !important;
     position: fixed !important;
-    left: 0.5rem !important;
+    left: 0.6rem !important;
     right: auto !important;
-    top: 50% !important;
+    top: 42% !important;
     bottom: auto !important;
-    transform: translateY(-50%) !important;
-    height: 12rem !important;
-    width: 2.6rem !important;
-    padding: 0.6rem 0.3rem !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 22px !important;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    height: 14rem !important;
+    width: 2.4rem !important;
+    padding: 0.5rem 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
     align-items: center;
     z-index: 55 !important;
   }
@@ -367,9 +397,9 @@ button:active { transform: translateY(0); }
     font-size: 0.55rem !important;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    margin-bottom: 0.3rem;
-    color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 0.15em;
+    margin-bottom: 0.25rem;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.18em;
   }
   #master-fade {
     -webkit-appearance: slider-vertical;
@@ -381,123 +411,84 @@ button:active { transform: translateY(0); }
     flex: 1;
   }
 
-  /* === BOTTOM-LEFT угол: 📝 фидбек === */
-  #feedback-btn {
+  /* === BOTTOM-LEFT: 👁 стрим === */
+  #stream-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
     position: fixed !important;
     bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
     top: auto !important;
-    left: 0.7rem !important;
+    left: 0.6rem !important;
     right: auto !important;
-    width: 2.6rem !important;
-    height: 2.6rem !important;
-    font-size: 1rem !important;
-    background: rgba(0, 0, 0, 0.55) !important;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    width: 3rem !important;
+    height: 3rem !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 1.7rem !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    cursor: pointer;
+    z-index: 60 !important;
+  }
+  #stream-btn:hover { transform: none; }
+
+  /* === BOTTOM-CENTER: ◀ FPS:30 ▶ === */
+  #fps-mobile-wrap {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.4rem;
+    position: fixed !important;
+    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
     z-index: 60;
+  }
+  #fps-mobile-wrap button {
+    width: 2.4rem !important;
+    height: 2.4rem !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 1.1rem !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    cursor: pointer;
+  }
+  #fps-mobile-label {
+    background: var(--yellow);
+    color: #000;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(254, 239, 51, 0.4);
+    min-width: 4.4rem;
+    text-align: center;
   }
 
-  /* === BOTTOM-CENTER: 📚 ● 🗑 fps 🔗 — прижато к низу === */
-  /* Templates */
-  #templates-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    position: fixed !important;
-    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    left: calc(50% - 5.6rem) !important;
-    width: 2.6rem !important;
-    height: 2.6rem !important;
-    padding: 0 !important;
-    border-radius: 50% !important;
-    background: rgba(196, 168, 255, 0.22) !important;
-    border: 1px solid rgba(196, 168, 255, 0.4) !important;
-    color: transparent !important;
-    font-size: 0 !important;
-    z-index: 60;
-  }
-  #templates-btn::before { content: '📚'; font-size: 1.3rem; }
-  /* REC */
-  #rec-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    position: fixed !important;
-    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    left: calc(50% - 2.4rem) !important;
-    width: 2.6rem !important;
-    height: 2.6rem !important;
-    padding: 0 !important;
-    border-radius: 50% !important;
-    background: rgba(255, 77, 46, 0.22) !important;
-    border: 1px solid rgba(255, 77, 46, 0.45) !important;
-    color: transparent !important;
-    font-size: 0 !important;
-    z-index: 60;
-  }
-  #rec-btn::before { content: '●'; font-size: 1.5rem; color: #ff4d2e; }
-  /* Clear */
+  /* === BOTTOM-RIGHT: 🗑 корзина === */
   #clear-all-btn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
     position: fixed !important;
     bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    left: calc(50% + 0.8rem) !important;
-    width: 2.6rem !important;
-    height: 2.6rem !important;
-    padding: 0 !important;
-    border-radius: 50% !important;
-    color: transparent !important;
-    font-size: 0 !important;
-    z-index: 60;
-  }
-  #clear-all-btn::before { content: '🗑'; font-size: 1.3rem; }
-  /* FPS — крупный, жёлтый, заметный */
-  .header-right {
-    display: flex !important;
-    position: fixed !important;
-    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    top: auto !important;
-    left: calc(50% + 4rem) !important;
-    right: auto !important;
-    z-index: 60;
-  }
-  .header-right #fullscreen-btn,
-  .header-right #lang-btn { display: none !important; }
-  #fps-select {
-    height: 2.6rem !important;
-    min-width: 4.2rem !important;
-    border-radius: 999px !important;
-    padding: 0 0.7rem !important;
-    font-size: 0.78rem !important;
-    font-weight: 700 !important;
-    background: var(--yellow) !important;
-    color: #000 !important;
-    border: 1px solid rgba(254, 239, 51, 0.5) !important;
-    box-shadow: 0 4px 14px rgba(254, 239, 51, 0.4) !important;
-    appearance: none;
-    -webkit-appearance: none;
-    text-align: center;
-  }
-  /* Share — справа от FPS */
-  #share-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    position: fixed !important;
-    bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    right: 0.7rem !important;
+    right: 0.6rem !important;
     left: auto !important;
-    width: 2.6rem !important;
-    height: 2.6rem !important;
+    top: auto !important;
+    width: 3rem !important;
+    height: 3rem !important;
     padding: 0 !important;
-    border-radius: 50% !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     color: transparent !important;
     font-size: 0 !important;
     z-index: 60;
   }
-  #share-btn::before { content: '🔗'; font-size: 1.2rem; }
+  #clear-all-btn::before { content: '🗑'; font-size: 1.6rem; }
 
   /* === Палитра — bottom-sheet (когда нажата ⊕ сверху) === */
   #palette {
@@ -519,6 +510,11 @@ button:active { transform: translateY(0); }
     border-radius: 999px;
     margin: 0.3rem auto 0.7rem;
   }
+}
+
+/* На десктопе и iPad mobile-only кнопки прячем */
+@media (min-width: 601px) {
+  #fps-mobile-wrap, #stream-btn { display: none !important; }
 }
 
 /* iPad: учитываем home indicator снизу — scene-bar 1-9 не должен быть под жестом */
