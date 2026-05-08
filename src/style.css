@@ -292,7 +292,7 @@ button:active { transform: translateY(0); }
   }
   #brand::before { display: none !important; }
 
-  /* === TOP-LEFT: 📚 Show — открывает модалку шаблонов === */
+  /* === TOP-LEFT: ★ Show — оранжевая круглая с белой звездой === */
   #templates-btn {
     display: inline-flex !important;
     align-items: center;
@@ -305,11 +305,14 @@ button:active { transform: translateY(0); }
     width: 2.8rem !important;
     height: 2.8rem !important;
     padding: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    color: rgba(255, 255, 255, 0.95) !important;
+    background: var(--pink) !important; /* оранжево-красный #ff4d2e */
+    border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 16px rgba(255, 77, 46, 0.4) !important;
+    color: white !important;
     font-size: 1.5rem !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
     z-index: 60 !important;
   }
 
@@ -357,16 +360,16 @@ button:active { transform: translateY(0); }
     padding: 0 !important;
     box-shadow: none !important;
   }
-  /* === TOP-RIGHT: ⊕ кнопка добавить ноду — прозрачная с тонкой жёлтой обводкой === */
+  /* === TOP-RIGHT: ⊕ кнопка добавить ноду — прозрачная с оранжевой обводкой === */
   #palette-btn {
     width: 2.6rem !important;
     height: 2.6rem !important;
     padding: 0 !important;
     border-radius: 50% !important;
     background: transparent !important;
-    color: var(--yellow) !important;
+    color: var(--pink) !important;
     box-shadow: none !important;
-    border: 1.5px solid rgba(254, 239, 51, 0.6) !important;
+    border: 1.5px solid rgba(255, 77, 46, 0.7) !important;
     line-height: 1 !important;
     font-weight: 700 !important;
     display: inline-flex !important;

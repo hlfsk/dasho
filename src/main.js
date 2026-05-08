@@ -1104,6 +1104,11 @@ sceneBar?.appendChild(importBtn);
       clear.dataset.mobileLabel = '1';
       clear.textContent = '🗑';
     }
+    const tpl = document.getElementById('templates-btn');
+    if (tpl && tpl.dataset.mobileLabel !== '1') {
+      tpl.dataset.mobileLabel = '1';
+      tpl.textContent = '★';
+    }
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupMobileLabels);
