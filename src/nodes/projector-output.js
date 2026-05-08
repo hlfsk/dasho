@@ -66,16 +66,26 @@ export class ProjectorOutputNode extends Node {
     fsHint.style.cssText = 'font-size:0.62rem;opacity:0.55;line-height:1.4';
     fsHint.innerHTML = 'Один монитор / iPad — fullscreen. Esc — выход.<br>Два монитора — используй ↓ окно и перетащи его.';
 
-    // Кнопка для второго монитора
-    const winBtn = document.createElement('button');
-    winBtn.textContent = '🪟 Открыть в отдельном окне (для 2-го монитора)';
-    winBtn.type = 'button';
-    winBtn.style.cssText = 'font-size:0.78rem;padding:0.4rem 0.6rem;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.12);box-shadow:none';
-    winBtn.addEventListener('click', () => this.openWindow());
+    // На iPad/iPhone нет настоящих окон — popup открывается как новая
+    // вкладка Safari и canvas в ней не рисуется. Так что для touch-only
+    // показываем пояснение вместо нерабочей кнопки.
+    const isTouchOnly = window.matchMedia &&
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-    const winHint = document.createElement('div');
+    let winBtn = null;
+    let winHint = document.createElement('div');
     winHint.style.cssText = 'font-size:0.62rem;opacity:0.55;line-height:1.4';
-    winHint.innerHTML = 'Если браузер заблокирует popup — нажми «Разрешить» в адресной строке и кликни ещё раз.<br>В окне на проекторе нажми ⌘⌃F (Mac) для fullscreen.';
+
+    if (isTouchOnly) {
+      winHint.innerHTML = '📱 На iPad/iPhone отдельное окно не работает — Safari открывает новую вкладку. Используй <b>fullscreen</b> ↑ и подключи проектор по HDMI/USB-C — экран iPad транслируется автоматически.';
+    } else {
+      winBtn = document.createElement('button');
+      winBtn.textContent = '🪟 Открыть в отдельном окне (для 2-го монитора)';
+      winBtn.type = 'button';
+      winBtn.style.cssText = 'font-size:0.78rem;padding:0.4rem 0.6rem;background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.85);border:1px solid rgba(255,255,255,0.12);box-shadow:none';
+      winBtn.addEventListener('click', () => this.openWindow());
+      winHint.innerHTML = 'Если браузер заблокирует popup — нажми «Разрешить» в адресной строке и кликни ещё раз.<br>В окне на проекторе нажми ⌘⌃F (Mac) для fullscreen.';
+    }
 
     const status = document.createElement('div');
     status.style.cssText = 'font-size:0.7rem;opacity:0.7';
@@ -86,7 +96,7 @@ export class ProjectorOutputNode extends Node {
     wrap.appendChild(lbl);
     wrap.appendChild(fsBtn);
     wrap.appendChild(fsHint);
-    wrap.appendChild(winBtn);
+    if (winBtn) wrap.appendChild(winBtn);
     wrap.appendChild(winHint);
     wrap.appendChild(status);
     this.bodyEl.prepend(wrap);

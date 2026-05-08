@@ -112,7 +112,7 @@ import { Particles3DNode }    from './nodes/particles-3d.js?v=3';
 import { PaintNode }          from './nodes/paint.js?v=5';
 import { MixNode }            from './nodes/mix.js?v=2';
 import { MapperNode }         from './nodes/mapper.js?v=2';
-import { ProjectorOutputNode } from './nodes/projector-output.js?v=2';
+import { ProjectorOutputNode } from './nodes/projector-output.js?v=3';
 import { FinalCollageNode }   from './nodes/final-collage.js';
 
 // Регистрация типов нод (порядок = порядок в палитре).
