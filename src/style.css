@@ -1,19 +1,19 @@
 /* ========================================================================
-   lupsmachine-v2 — стили (DÄSHO / BBBANK палитра)
-   Чёрный фон, акцент — оранж-CTA + acid-yellow.
-   Цветовые роли через CSS-переменные ниже.
+   DÄSHO — стили v3 (improvements_v2 visual language)
+   Источник дизайна: improvements_v2.html
+   Палитра BBBANK: чёрный фон, оранж-CTA + acid-yellow акцент.
    ======================================================================== */
 
 :root {
-  --bg:        #000000;   /* чистый чёрный фон */
-  --bg-2:      #0e0e0e;   /* фон карточек/нод */
-  --ink:       #ffffff;   /* основной текст */
-  --pink:      #ff4d2e;   /* CTA-оранж (бывший розовый) */
-  --yellow:    #feef33;   /* acid-жёлтый — бренд / video / сцены */
-  --blue:      #00e5d5;   /* бирюзовый — audio */
-  --lavender:  #c4a8ff;   /* лавандовый — number */
-  --red:       #ff4d2e;   /* trigger = тот же оранж */
-  --green:     #feef33;   /* video = жёлтый */
+  --bg:        #000000;
+  --bg-2:      #0e0e0e;
+  --ink:       #ffffff;
+  --pink:      #ff4d2e;
+  --yellow:    #feef33;
+  --blue:      #00e5d5;
+  --lavender:  #c4a8ff;
+  --red:       #ff4d2e;
+  --green:     #feef33;
   --line:      rgba(255,255,255,0.08);
   --muted:     rgba(255,255,255,0.5);
 }
@@ -30,20 +30,17 @@ html, body {
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
-  /* iPad/iPhone: убираем 300мс задержку tap, двойной-tap zoom и резиновый bounce */
   touch-action: manipulation;
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* На холсте и интерактивных слоях — полностью свой жест-движок */
 #dock, #stage, #wires, #dots-bg, .node, .socket {
   touch-action: none;
 }
-/* Поля ввода и select — оставляем системные жесты */
 input, textarea, select { touch-action: auto; }
 
-/* ── Финальный коллаж (canvas) — фон сцены ──────────────────────────────── */
+/* ── Canvas / stage ──────────────────────────────────────────────── */
 #stage {
   position: fixed;
   inset: 0;
@@ -54,9 +51,7 @@ input, textarea, select { touch-action: auto; }
   z-index: 0;
 }
 
-/* ── Дотс-фон. Один большой div, ездит вместе с холстом через CSS-vars ── */
-/* Точка задана в % от тайла → автоматически масштабируется со zoom без
-   отдельного CSS правила. 4% от 24px = ~1px тонкая точка. */
+/* ── Dots bg — v2: 28px grid, yellow-tinted 10% ─────────────────── */
 #dots-bg {
   position: fixed;
   inset: 0;
@@ -65,13 +60,12 @@ input, textarea, select { touch-action: auto; }
   z-index: 1;
   pointer-events: none;
   background-color: transparent;
-  background-image: radial-gradient(circle, rgba(200, 210, 255, 0.16) 4%, transparent 5.5%);
-  background-size: calc(24px * var(--zoom, 1)) calc(24px * var(--zoom, 1));
-  background-position:
-    calc(var(--pan-x, 0px)) calc(var(--pan-y, 0px));
+  background-image: radial-gradient(circle, rgba(254,239,51,0.10) 4%, transparent 5.5%);
+  background-size: calc(28px * var(--zoom, 1)) calc(28px * var(--zoom, 1));
+  background-position: calc(var(--pan-x, 0px)) calc(var(--pan-y, 0px));
 }
 
-/* ── Заставка при загрузке ───────────────────────────────────────────── */
+/* ── Splash ──────────────────────────────────────────────────────── */
 #splash {
   position: fixed;
   inset: 0;
@@ -91,63 +85,58 @@ input, textarea, select { touch-action: auto; }
   bottom: 2.5rem;
   left: 50%;
   transform: translateX(-50%);
-  font-family: system-ui, sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: rgba(254, 239, 51, 0.45);
+  color: rgba(254,239,51,0.45);
   animation: dasho-blink 1.6s ease-in-out infinite;
 }
 @keyframes dasho-blink {
   0%, 100% { opacity: 0.35; }
-  50%      { opacity: 0.85; }
+  50%       { opacity: 0.85; }
 }
 #splash.fading { opacity: 0; }
 #splash .logo-img {
   max-width: min(60vw, 540px);
   max-height: 50vh;
   object-fit: contain;
-  filter: drop-shadow(0 6px 30px rgba(254, 239, 51, 0.18));
+  filter: drop-shadow(0 6px 30px rgba(254,239,51,0.18));
 }
-/* Fallback — рисую штамп CSS-средствами если картинки dasho-logo.png нет */
 #splash .logo-fallback {
   display: none;
   background: #feef33;
   color: #0e1120;
-  font-family: ui-rounded, "Comic Sans MS", system-ui, sans-serif;
+  font-family: ui-rounded, 'Comic Sans MS', system-ui, sans-serif;
   font-weight: 900;
   font-size: clamp(48px, 12vw, 120px);
   letter-spacing: 0.04em;
   padding: 0.2em 0.5em 0.25em;
   border-radius: 12px;
   transform: rotate(-3.5deg);
-  box-shadow: 0 8px 40px rgba(254, 239, 51, 0.25);
+  box-shadow: 0 8px 40px rgba(254,239,51,0.25);
 }
 #splash .logo-img.fail + .logo-fallback { display: block; }
 #splash .tagline {
   color: #feef33;
-  font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif;
   font-size: clamp(14px, 2.2vw, 22px);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.42em;
-  margin-left: 0.42em; /* компенсация трекинга, чтобы выглядело центрировано */
-  margin-top: -0.8rem;  /* подвинуть выше, ближе к логотипу */
+  margin-left: 0.42em;
+  margin-top: -0.8rem;
   opacity: 0.9;
 }
 
-/* ── Холст, по которому ездят ноды. На нём — pan/zoom. ─────────────────── */
+/* ── Dock / Wires ────────────────────────────────────────────────── */
 #dock {
   position: fixed;
   inset: 0;
-  pointer-events: none; /* пустые места не должны ловить клики */
+  pointer-events: none;
   z-index: 5;
   transform: translate(var(--pan-x, 0px), var(--pan-y, 0px)) scale(var(--zoom, 1));
   transform-origin: 0 0;
   will-change: transform;
 }
-
-/* SVG слой проводов — внутри dock, чтобы координаты совпадали ─────────── */
 #wires {
   position: absolute;
   left: 0; top: 0;
@@ -157,46 +146,61 @@ input, textarea, select { touch-action: auto; }
   z-index: 1;
   overflow: visible;
 }
+/* Провода — v2: 2.5px, rounded caps, hover → 4px */
+#wires path {
+  stroke-linecap: round;
+  stroke-width: 2.5;
+  opacity: 0.85;
+  pointer-events: stroke;
+  transition: stroke-width 0.12s;
+}
+#wires path:hover { stroke-width: 4; }
 
-/* ── Верхняя панель: кнопки ────────────────────────────────────────────── */
+/* ── Toolbar кнопки — v2 .tb / .tb.ghost pattern ────────────────── */
 button {
   font-family: inherit;
   font-size: 0.82rem;
   font-weight: 600;
-  padding: 0.4rem 0.8rem;
+  padding: 0.45rem 0.85rem;
   border: none;
   border-radius: 999px;
-  background: #ff4d2e;
+  background: var(--pink);
   color: white;
   cursor: pointer;
   transition: transform 0.1s, background 0.2s;
-  box-shadow: 0 4px 12px rgba(255, 77, 46, 0.3);
+  box-shadow: 0 4px 12px rgba(255,77,46,0.3);
 }
 button:hover { background: #ff6c4a; transform: translateY(-1px); }
 button:active { transform: translateY(0); }
 
-/* Логотип-pill — фирменный знак DÄSHO в шапке.
-   Чистый sans-serif как в прототипе, без Comic Sans. */
-/* ── Шапка: две flex-группы (слева / справа) — одна строка, без переноса ── */
+/* Ghost / secondary кнопки */
+.header-left button:not(#palette-btn):not(#templates-btn):not(#rec-btn):not(#share-btn):not(#cookbook-add-btn) {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: none;
+}
+.header-left button:not(#palette-btn):not(#templates-btn):not(#rec-btn):not(#share-btn):not(#cookbook-add-btn):hover {
+  background: rgba(255,77,46,0.4);
+  color: white;
+  border-color: transparent;
+}
+
+/* ── Шапка ───────────────────────────────────────────────────────── */
 .header-left, .header-right {
   position: fixed;
   top: 0.7rem;
   z-index: 50;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
   flex-wrap: nowrap;
   white-space: nowrap;
 }
-.header-left  { left:  0.7rem; }
-.header-right {
-  /* отодвигаем влево от лого DÄSHO которое стоит у самого правого края.
-     Учитываем что лого с rotate(-4deg) занимает чуть больше места */
-  right: 7rem;
-  justify-content: flex-end;
-}
+.header-left  { left: 0.7rem; }
+.header-right { right: 7rem; justify-content: flex-end; }
 
-/* ── Логотип-pill: самостоятельно в правом верхнем углу ── */
+/* ── Бренд-пилюля — v2 style ────────────────────────────────────── */
 #brand {
   position: fixed;
   top: 0.7rem;
@@ -204,22 +208,44 @@ button:active { transform: translateY(0); }
   z-index: 50;
   display: flex;
   align-items: center;
-  padding: 0.45rem 0.95rem;
+  padding: 0.5rem 1rem;
   background: var(--yellow);
   color: #000;
   border-radius: 999px;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, "Helvetica Neue", sans-serif;
+  font-family: ui-rounded, system-ui, sans-serif;
   font-weight: 900;
   letter-spacing: 0.02em;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   transform: rotate(-4deg);
   transform-origin: center;
-  box-shadow: 0 4px 18px rgba(254, 239, 51, 0.2);
+  box-shadow: 0 4px 18px rgba(254,239,51,0.2);
   user-select: none;
   pointer-events: none;
 }
 
-/* Узкие экраны — компактим элементы чтобы влезли в одну строку */
+/* Статус-пилюля (fps · ноды · провода) */
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(10px);
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.status-pill .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+}
+.status-pill b { color: var(--green); font-weight: 700; }
+
 @media (max-width: 1100px) {
   .header-left, .header-right { gap: 0.3rem; }
   #templates-btn, #rec-btn, #clear-all-btn, #share-btn { font-size: 0.72rem; padding: 0.35rem 0.55rem; }
@@ -229,11 +255,9 @@ button:active { transform: translateY(0); }
   .header-right { right: 5.8rem; }
 }
 @media (max-width: 900px) {
-  /* iPad portrait и меньше — header может переноситься во 2-ю строку */
   .header-left, .header-right { flex-wrap: wrap; }
 }
 @media (max-width: 760px) {
-  /* Лого превращается в букву D — место в строке остаётся */
   #brand { font-size: 0; padding: 0.4rem 0.55rem; }
   #brand::before { content: 'D'; font-size: 0.95rem; }
   .header-right { right: 3.4rem; }
@@ -242,42 +266,26 @@ button:active { transform: translateY(0); }
   #master-fade { width: 48px; }
 }
 
-/* ── 📱 Mobile portrait — раскладка по новому эскизу ──────────────────
-   Top:    ⬇ ЗАГРУЗ · [DASHO] · [⊕]
-   Left:   ⬆ ВЫГРУЗ · ▌ FADE
-   Bottom: 👁 СТРИМ · ◀FPS:30▶ · 🗑
-   Кнопки — голые эмодзи без обводки, на тёмном фоне. */
+/* Mobile portrait */
 @media (max-width: 600px) {
-  /* Скрываем всё что не на эскизе. Templates теперь видим — это 📚 в углу слева. */
   #hint, #statusbar, #cookbook-add-btn,
   #feedback-btn, #history-bar,
   #rec-btn, #share-btn,
-  /* Сцены 1-9 и заголовок «Сцены» скрываем, но контейнер scene-bar не скрываем —
-     внутри живут import/export-кнопки которые нам нужны (мы их вынесем через position:fixed) */
   #scene-bar > .lab,
   #scene-bar > .slot,
   #scene-bar > .slots-clear { display: none !important; }
-  /* Сам контейнер scene-bar — невидимая обёртка (без фона/рамки/тени) */
   #scene-bar {
     background: transparent !important;
     border: none !important;
     backdrop-filter: none !important;
     box-shadow: none !important;
     padding: 0 !important;
-    pointer-events: none !important; /* клики проходят насквозь, дети им вернут pointer-events */
+    pointer-events: none !important;
   }
   #scene-bar > * { pointer-events: auto; }
-  /* fullscreen-кнопку (была в шапке) прячем — заменяется на 👁 стрим */
   #fullscreen-btn, #lang-btn { display: none !important; }
-  /* fps-select (нативный) прячется — вместо него кастомный ◀FPS:30▶ */
   #fps-select { display: none !important; }
-
-  /* === Универсальный стиль mobile-кнопок: эмодзи без обводки === */
-  /* Применяется к нашим переехавшим кнопкам */
-  #brand,
-  #brand::before { font-size: 1.05rem !important; padding: 0 !important; content: normal !important; }
-
-  /* === TOP-CENTER: лого DASHO в овале === */
+  #brand, #brand::before { font-size: 1.05rem !important; padding: 0 !important; content: normal !important; }
   #brand {
     position: fixed !important;
     top: 1rem !important;
@@ -286,13 +294,11 @@ button:active { transform: translateY(0); }
     bottom: auto !important;
     transform: translateX(-50%) !important;
     padding: 0.5rem 1.1rem !important;
-    box-shadow: 0 4px 20px rgba(254, 239, 51, 0.45) !important;
+    box-shadow: 0 4px 20px rgba(254,239,51,0.45) !important;
     z-index: 60 !important;
     white-space: nowrap;
   }
   #brand::before { display: none !important; }
-
-  /* === TOP-LEFT: ★ Show — оранжевая круглая с белой звездой === */
   #templates-btn {
     display: inline-flex !important;
     align-items: center;
@@ -305,20 +311,15 @@ button:active { transform: translateY(0); }
     width: 2.8rem !important;
     height: 2.8rem !important;
     padding: 0 !important;
-    background: var(--pink) !important; /* оранжево-красный #ff4d2e */
-    border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+    background: var(--pink) !important;
+    border: 1.5px solid rgba(255,255,255,0.18) !important;
     border-radius: 50% !important;
-    box-shadow: 0 4px 16px rgba(255, 77, 46, 0.4) !important;
+    box-shadow: 0 4px 16px rgba(255,77,46,0.4) !important;
     color: white !important;
     font-size: 1.5rem !important;
-    line-height: 1 !important;
-    font-weight: 900 !important;
     z-index: 60 !important;
   }
-
-  /* ⬆ Выгрузить и ⬇ Загрузить — общий стиль */
-  #scene-import-btn,
-  #scene-export-btn {
+  #scene-import-btn, #scene-export-btn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
@@ -329,38 +330,22 @@ button:active { transform: translateY(0); }
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    color: rgba(255, 255, 255, 0.9) !important;
+    color: rgba(255,255,255,0.9) !important;
     font-size: 1.5rem !important;
     z-index: 55 !important;
   }
-  /* ⬇ Загрузить теперь под выгрузом, оба слева в середине рядом с FADE */
-  #scene-import-btn {
-    left: 0.6rem !important;
-    top: 22% !important;
-    right: auto !important;
-    bottom: auto !important;
-  }
-
-  /* === TOP-RIGHT: ⊕ кнопка добавить ноду === */
+  #scene-import-btn { left: 0.6rem !important; top: 22% !important; }
   .header-left {
     position: fixed !important;
     top: 1rem !important;
-    bottom: auto !important;
-    left: auto !important;
     right: 0.7rem !important;
-    transform: none !important;
+    left: auto !important;
     z-index: 60 !important;
-    display: flex !important;
-    flex-direction: row !important;
     flex-wrap: nowrap !important;
-    gap: 0.4rem !important;
     background: transparent !important;
     border: none !important;
-    border-radius: 0 !important;
     padding: 0 !important;
-    box-shadow: none !important;
   }
-  /* === TOP-RIGHT: ⊕ кнопка добавить ноду — прозрачная с оранжевой обводкой === */
   #palette-btn {
     width: 2.6rem !important;
     height: 2.6rem !important;
@@ -369,52 +354,26 @@ button:active { transform: translateY(0); }
     background: transparent !important;
     color: var(--pink) !important;
     box-shadow: none !important;
-    border: 1.5px solid rgba(255, 77, 46, 0.7) !important;
-    line-height: 1 !important;
-    font-weight: 700 !important;
+    border: 1.5px solid rgba(255,77,46,0.7) !important;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
   }
-  /* Текст устанавливается через JS как «⊕». ::before не используем чтобы
-     не дублировать с textContent. */
-
-  /* === LEFT-MIDDLE: ⬆ Выгрузить === */
   #scene-export-btn {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    position: fixed !important;
     left: 0.5rem !important;
-    right: auto !important;
     top: 32% !important;
-    bottom: auto !important;
-    width: 2.6rem !important;
-    height: 2.6rem !important;
-    padding: 0 !important;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    color: rgba(255, 255, 255, 0.95) !important;
-    font-size: 1.5rem !important;
-    z-index: 55 !important;
   }
-
-  /* === LEFT: вертикальный FADE-слайдер — без рамки, голый === */
   #master-fade-wrap {
     display: flex !important;
     flex-direction: column-reverse !important;
     position: fixed !important;
     left: 0.6rem !important;
-    right: auto !important;
     top: 42% !important;
-    bottom: auto !important;
     height: 14rem !important;
     width: 2.4rem !important;
     padding: 0.5rem 0 !important;
     background: transparent !important;
     border: none !important;
-    border-radius: 0 !important;
     align-items: center;
     z-index: 55 !important;
   }
@@ -423,9 +382,7 @@ button:active { transform: translateY(0); }
     font-size: 0.55rem !important;
     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    margin-bottom: 0.25rem;
-    color: rgba(255, 255, 255, 0.55);
-    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.55);
   }
   #master-fade {
     -webkit-appearance: slider-vertical;
@@ -436,17 +393,13 @@ button:active { transform: translateY(0); }
     height: 100% !important;
     flex: 1;
   }
-
-  /* === BOTTOM-LEFT: 👁 стрим === */
   #stream-btn {
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
     position: fixed !important;
     bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px)) !important;
-    top: auto !important;
     left: 0.6rem !important;
-    right: auto !important;
     width: 3rem !important;
     height: 3rem !important;
     padding: 0 !important;
@@ -454,13 +407,9 @@ button:active { transform: translateY(0); }
     border: none !important;
     box-shadow: none !important;
     font-size: 1.7rem !important;
-    color: rgba(255, 255, 255, 0.95) !important;
-    cursor: pointer;
     z-index: 60 !important;
   }
   #stream-btn:hover { transform: none; }
-
-  /* === BOTTOM-CENTER: ◀ FPS:30 ▶ === */
   #fps-mobile-wrap {
     display: inline-flex !important;
     align-items: center;
@@ -479,8 +428,7 @@ button:active { transform: translateY(0); }
     border: none !important;
     box-shadow: none !important;
     font-size: 1.1rem !important;
-    color: rgba(255, 255, 255, 0.85) !important;
-    cursor: pointer;
+    color: rgba(255,255,255,0.85) !important;
   }
   #fps-mobile-label {
     background: var(--yellow);
@@ -489,12 +437,10 @@ button:active { transform: translateY(0); }
     font-size: 0.78rem;
     padding: 0.5rem 0.9rem;
     border-radius: 999px;
-    box-shadow: 0 4px 14px rgba(254, 239, 51, 0.4);
+    box-shadow: 0 4px 14px rgba(254,239,51,0.4);
     min-width: 4.4rem;
     text-align: center;
   }
-
-  /* === BOTTOM-RIGHT: 🗑 корзина (текст ставится в JS) === */
   #clear-all-btn {
     display: inline-flex !important;
     align-items: center;
@@ -511,11 +457,8 @@ button:active { transform: translateY(0); }
     border: none !important;
     box-shadow: none !important;
     font-size: 1.6rem !important;
-    color: rgba(255, 255, 255, 0.95) !important;
     z-index: 60;
   }
-
-  /* === Палитра — bottom-sheet (когда нажата ⊕ сверху) === */
   #palette {
     top: auto !important;
     bottom: calc(4rem + env(safe-area-inset-bottom, 0px)) !important;
@@ -524,37 +467,30 @@ button:active { transform: translateY(0); }
     width: auto !important;
     max-height: 55vh;
     border-radius: 22px;
-    box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.6);
   }
   #palette::before {
     content: '';
     display: block;
     width: 40px;
     height: 5px;
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255,255,255,0.25);
     border-radius: 999px;
     margin: 0.3rem auto 0.7rem;
   }
 }
 
-/* На десктопе и iPad mobile-only кнопки прячем */
 @media (min-width: 601px) {
   #fps-mobile-wrap, #stream-btn { display: none !important; }
 }
 
-/* ── ▶ play node — вертикальная sticker-кнопка слева на mobile ────── */
-@media (max-width: 1100px) {
-  .play-share-node.mobile-fab { display: none !important; } /* старая FAB убрана */
-}
+/* ── Play-node tab ───────────────────────────────────────────────── */
 #play-node-tab {
   position: fixed;
-  /* Сразу над кнопкой 👁 в bottom-left (👁: bottom 0.85rem + ~3rem высота кнопки) */
   left: 0.6rem;
   bottom: calc(4.4rem + env(safe-area-inset-bottom, 0px));
   z-index: 60;
   background: transparent;
-  color: var(--blue); /* бирюзовый #00e5d5 */
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, 'Helvetica Neue', sans-serif;
+  color: var(--blue);
   font-weight: 900;
   font-size: 0.95rem;
   letter-spacing: 0.04em;
@@ -567,263 +503,101 @@ button:active { transform: translateY(0); }
   flex-direction: column;
   align-items: flex-start;
   gap: 0.05rem;
-  text-shadow: 0 0 14px rgba(0, 229, 213, 0.4);
+  text-shadow: 0 0 14px rgba(0,229,213,0.4);
 }
 #play-node-tab:hover { filter: brightness(1.1); }
-@media (min-width: 1101px) {
-  #play-node-tab { display: none; }
-}
+@media (min-width: 1101px) { #play-node-tab { display: none; } }
 
-/* Bottom sheet с выбором ноды */
 .play-node-overlay {
   position: fixed;
   inset: 0;
   z-index: 9500;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0,0,0,0.55);
   backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
 }
 .play-node-modal {
   background: #1a1d2e;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255,255,255,0.12);
   border-radius: 18px 18px 0 0;
   padding: 0.7rem 0.9rem max(1.2rem, env(safe-area-inset-bottom));
   width: 100%;
   max-width: 540px;
-  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 -20px 60px rgba(0,0,0,0.6);
   max-height: 80vh;
   overflow-y: auto;
 }
 .play-node-handle {
   width: 40px;
   height: 5px;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255,255,255,0.25);
   border-radius: 999px;
   margin: 0 auto 0.7rem;
 }
-.play-node-title {
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--yellow);
-  letter-spacing: 0.03em;
-  text-align: center;
-}
-.play-node-sub {
-  font-size: 0.75rem;
-  opacity: 0.6;
-  text-align: center;
-  margin-bottom: 0.7rem;
-}
-.play-node-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 0.7rem;
-}
+.play-node-title { font-size: 1.05rem; font-weight: 800; color: var(--yellow); letter-spacing: 0.03em; text-align: center; }
+.play-node-sub { font-size: 0.75rem; opacity: 0.6; text-align: center; margin-bottom: 0.7rem; }
+.play-node-list { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.7rem; }
 .play-node-item {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 0.55rem 0.7rem;
-  text-align: left;
-  font-size: 0.88rem;
-  color: white;
-  cursor: pointer;
-  font-family: inherit;
-  box-shadow: none;
+  display: flex; align-items: center; gap: 0.55rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 0.55rem 0.7rem;
+  text-align: left; font-size: 0.88rem; color: white;
+  cursor: pointer; font-family: inherit; box-shadow: none;
 }
-.play-node-item.active {
-  background: rgba(0, 255, 127, 0.15);
-  border-color: rgba(0, 255, 127, 0.5);
-  color: #00ff7f;
-  font-weight: 600;
-}
+.play-node-item.active { background: rgba(0,255,127,0.15); border-color: rgba(0,255,127,0.5); color: #00ff7f; font-weight: 600; }
 .play-node-item .pn-icon { font-size: 1.1rem; }
-.play-node-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-.pn-action {
-  font-size: 0.92rem;
-  padding: 0.7rem 0.9rem;
-  border-radius: 10px;
-  font-family: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: none;
-  border: 1px solid;
-}
+.play-node-actions { display: flex; flex-direction: column; gap: 0.4rem; }
+.pn-action { font-size: 0.92rem; padding: 0.7rem 0.9rem; border-radius: 10px; font-family: inherit; font-weight: 600; cursor: pointer; box-shadow: none; border: 1px solid; }
 .pn-action:disabled { opacity: 0.4; cursor: not-allowed; }
-.pn-air {
-  background: rgba(0, 255, 127, 0.18);
-  color: #00ff7f;
-  border-color: rgba(0, 255, 127, 0.5);
-}
-.pn-share {
-  background: rgba(106, 166, 255, 0.18);
-  color: #6aa6ff;
-  border-color: rgba(106, 166, 255, 0.45);
-}
-.pn-dl {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.85);
-  border-color: rgba(255, 255, 255, 0.12);
-}
+.pn-air  { background: rgba(0,255,127,0.18); color: #00ff7f; border-color: rgba(0,255,127,0.5); }
+.pn-share { background: rgba(106,166,255,0.18); color: #6aa6ff; border-color: rgba(106,166,255,0.45); }
+.pn-dl { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); border-color: rgba(255,255,255,0.12); }
 
-/* Старый блок ниже остаётся (CSS-классы FAB) для случая если кто-то всё-таки
-   создаст PlayShare-ноду из палитры на десктопе — там это нормальный нодовый UI. */
-@media (max-width: 0) {
-  .play-share-node.mobile-fab {
-    position: fixed !important;
-    bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px)) !important;
-    left: 0.5rem !important;
-    top: auto !important;
-    z-index: 58 !important;
-    width: 4.2rem !important;
-    min-width: 4.2rem !important;
-    max-width: 4.2rem !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    background: radial-gradient(circle at 50% 50%, rgba(0, 255, 127, 0.35), rgba(0, 255, 127, 0.15)) !important;
-    border: 2px solid #00ff7f !important;
-    border-radius: 50% !important;
-    box-shadow: 0 0 28px rgba(0, 255, 127, 0.5), 0 4px 18px rgba(0, 0, 0, 0.4) !important;
-    overflow: visible !important;
-    height: 4.2rem !important;
-  }
-  /* Скрываем стандартные части ноды на FAB-режиме */
-  .play-share-node.mobile-fab .node-header,
-  .play-share-node.mobile-fab .node-arrow,
-  .play-share-node.mobile-fab .node-btn,
-  .play-share-node.mobile-fab .node-icon,
-  .play-share-node.mobile-fab .row-label,
-  .play-share-node.mobile-fab .param-output,
-  .play-share-node.mobile-fab .group-header { display: none !important; }
-  /* Глаз-эмодзи в центре */
-  .play-share-node.mobile-fab::before {
-    content: '👁';
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    pointer-events: none;
-    z-index: 0;
-  }
-  /* Сокет-вход — ОЧЕНЬ большой и видимый, чтобы провода легко приходили */
-  .play-share-node.mobile-fab .socket-in {
-    position: absolute !important;
-    width: 28px !important;
-    height: 28px !important;
-    left: -10px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    background: #00ff7f !important;
-    border: 3px solid #0a0a14 !important;
-    box-shadow: 0 0 14px rgba(0, 255, 127, 0.8) !important;
-    z-index: 5 !important;
-  }
-  .play-share-node.mobile-fab .socket-in::after {
-    inset: -16px !important; /* 60px touch-target */
-  }
-  /* Тело свёрнуто — но при раскрытии (тап на FAB) — bottom-sheet с кнопками */
-  .play-share-node.mobile-fab .node-body { display: none; }
-  .play-share-node.mobile-fab.expanded .node-body {
-    display: flex !important;
-    flex-direction: column;
-    position: fixed;
-    bottom: calc(9rem + env(safe-area-inset-bottom, 0px));
-    left: 0.5rem;
-    right: 0.5rem;
-    background: rgba(10, 10, 20, 0.95);
-    border: 1px solid rgba(0, 255, 127, 0.4);
-    border-radius: 16px;
-    padding: 0.6rem;
-    box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.6);
-    z-index: 70;
-    gap: 0.4rem;
-  }
-  /* Лёгкое покачивание чтобы FAB заметили */
-  @keyframes play-share-pulse {
-    0%, 100% { transform: scale(1); }
-    50%      { transform: scale(1.05); }
-  }
-  .play-share-node.mobile-fab { animation: play-share-pulse 3s ease-in-out infinite; }
-}
-
-/* iPad: учитываем home indicator снизу — scene-bar 1-9 не должен быть под жестом */
+/* ── Safe area ───────────────────────────────────────────────────── */
 @supports (padding: max(0px)) {
-  #scene-bar {
-    padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
-  }
-  #statusbar {
-    padding-bottom: max(0.4rem, env(safe-area-inset-bottom));
-  }
+  #scene-bar { padding-bottom: max(0.4rem, env(safe-area-inset-bottom)); }
+  #statusbar  { padding-bottom: max(0.4rem, env(safe-area-inset-bottom)); }
 }
 
-#palette-btn {
-  /* позиционируется flex-обёрткой .header-left */
-}
-
-#frame-btn {
-  position: fixed;
-  top: 0.7rem;
-  left: 16.5rem;
-  z-index: 50;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.85);
-  box-shadow: none;
-  border: 1px solid var(--line);
-  font-size: 0.78rem;
-  padding: 0.4rem 0.7rem;
-}
-#frame-btn:hover { background: rgba(254, 239, 51, 0.18); border-color: rgba(254, 239, 51, 0.4); }
-
+/* ── Special header buttons ─────────────────────────────────────── */
 #share-btn {
-  background: rgba(106, 166, 255, 0.18);
+  background: rgba(106,166,255,0.18);
   color: #6aa6ff;
-  border: 1px solid rgba(106, 166, 255, 0.4);
+  border: 1px solid rgba(106,166,255,0.4);
   box-shadow: none;
   font-size: 0.78rem;
   padding: 0.4rem 0.7rem;
 }
-#share-btn:hover { background: rgba(106, 166, 255, 0.32); }
+#share-btn:hover { background: rgba(106,166,255,0.32); transform: translateY(-1px); }
 
 #templates-btn {
-  background: rgba(254, 239, 51, 0.18);
+  background: rgba(254,239,51,0.18);
   color: var(--yellow);
-  border: 1px solid rgba(254, 239, 51, 0.4);
+  border: 1px solid rgba(254,239,51,0.4);
   box-shadow: none;
   font-size: 0.78rem;
   padding: 0.4rem 0.7rem;
 }
-#templates-btn:hover { background: rgba(254, 239, 51, 0.32); }
+#templates-btn:hover { background: rgba(254,239,51,0.32); transform: translateY(-1px); }
 
 #cookbook-add-btn {
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
+  width: 2rem; height: 2rem; padding: 0;
   border-radius: 50%;
-  background: rgba(254, 239, 51, 0.18);
+  background: rgba(254,239,51,0.18);
   color: var(--yellow);
-  border: 1px solid rgba(254, 239, 51, 0.4);
+  border: 1px solid rgba(254,239,51,0.4);
   box-shadow: none;
   font-size: 0.95rem;
 }
-#cookbook-add-btn:hover { background: rgba(254, 239, 51, 0.32); }
+#cookbook-add-btn:hover { background: rgba(254,239,51,0.32); transform: translateY(-1px); }
 
 #rec-btn {
-  background: rgba(255, 77, 46, 0.15);
-  color: rgba(255, 77, 46, 0.95);
-  border: 1px solid rgba(255, 77, 46, 0.45);
+  background: rgba(255,77,46,0.15);
+  color: rgba(255,77,46,0.95);
+  border: 1px solid rgba(255,77,46,0.45);
   box-shadow: none;
   font-size: 0.78rem;
   padding: 0.4rem 0.7rem;
@@ -831,7 +605,7 @@ button:active { transform: translateY(0); }
   font-weight: 700;
   letter-spacing: 0.05em;
 }
-#rec-btn:hover { background: rgba(255, 77, 46, 0.3); color: white; }
+#rec-btn:hover { background: rgba(255,77,46,0.3); color: white; }
 #rec-btn.recording {
   background: var(--pink);
   color: white;
@@ -839,44 +613,42 @@ button:active { transform: translateY(0); }
   animation: rec-blink 1s ease-in-out infinite;
 }
 @keyframes rec-blink {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 46, 0.7); }
-  50%      { box-shadow: 0 0 0 6px rgba(255, 77, 46, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,77,46,0.7); }
+  50%       { box-shadow: 0 0 0 6px rgba(255,77,46,0); }
 }
 
 #clear-all-btn {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.85);
   box-shadow: none;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255,255,255,0.12);
 }
-#clear-all-btn:hover { background: rgba(255, 77, 46, 0.4); }
+#clear-all-btn:hover { background: rgba(255,77,46,0.4); transform: translateY(-1px); }
 
 #fullscreen-btn {
   font-size: 0.95rem;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
+  width: 2rem; height: 2rem; padding: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.85);
   box-shadow: none;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255,255,255,0.12);
 }
-#fullscreen-btn:hover { background: rgba(255, 77, 46, 0.4); }
+#fullscreen-btn:hover { background: rgba(255,77,46,0.4); transform: translateY(-1px); }
 
 #fps-select {
   font-size: 0.7rem;
   height: 2rem;
   padding: 0 0.5rem;
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.12);
   outline: none;
   cursor: pointer;
 }
+#fps-select:hover { background: rgba(255,77,46,0.25); }
 
-/* Переключатель языка RU ↔ EN — маленький pill */
 #lang-btn {
   display: inline-flex;
   align-items: center;
@@ -884,23 +656,18 @@ button:active { transform: translateY(0); }
   height: 2rem;
   padding: 0 0.7rem;
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.12);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-decoration: none;
   cursor: pointer;
 }
-#lang-btn:hover {
-  background: rgba(254, 239, 51, 0.18);
-  color: var(--yellow);
-  border-color: rgba(254, 239, 51, 0.4);
-}
-#fps-select:hover { background: rgba(255, 77, 46, 0.25); }
+#lang-btn:hover { background: rgba(254,239,51,0.18); color: var(--yellow); border-color: rgba(254,239,51,0.4); }
 
-/* ── Master Fade — слайдер «всё в чёрный» в шапке ─────────────── */
+/* Master Fade */
 #master-fade-wrap {
   display: flex;
   align-items: center;
@@ -908,109 +675,53 @@ button:active { transform: translateY(0); }
   height: 2rem;
   padding: 0 0.7rem;
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
 }
-#master-fade-wrap .lab {
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.55);
-}
+#master-fade-wrap .lab { font-size: 0.6rem; letter-spacing: 0.1em; font-weight: 700; color: rgba(255,255,255,0.55); }
 #master-fade {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 90px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  width: 90px; height: 4px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px; outline: none; cursor: pointer;
 }
 #master-fade::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 14px; height: 14px;
   border-radius: 50%;
   background: #feef33;
   cursor: pointer;
-  box-shadow: 0 0 8px rgba(254, 239, 51, 0.5);
+  box-shadow: 0 0 8px rgba(254,239,51,0.5);
 }
 #master-fade::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 14px; height: 14px;
   border-radius: 50%;
   background: #feef33;
-  cursor: pointer;
-  border: none;
+  cursor: pointer; border: none;
 }
 
-/* ── Старый #hint — скрыт. Заменён на #hotkeys справа снизу. ──────────── */
-#hint {
-  display: none;
-  position: fixed;
-  bottom: 0.7rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 50;
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.45);
-  background: rgba(10, 10, 20, 0.55);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 0.35rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  pointer-events: none;
-  white-space: nowrap;
-  max-width: calc(100vw - 2rem);
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-@media (max-width: 700px) { #hint { display: none; } }
+#hint { display: none; }
 
-/* ── Touch-устройства: iPad / iPhone / Android ─────────────────────────── */
-/* Активируется ТОЛЬКО на устройствах без мыши + grubый pointer (палец).
-   Desktop (даже на маленьком окне) НЕ затрагивается. */
+/* Touch devices */
 @media (hover: none) and (pointer: coarse) {
-  /* Сокеты ещё крупнее — Apple HIG рекомендует ≥44px touch-target.
-     Невидимая «рука» через ::after позволяет визуально оставить кружок мелким,
-     но реально схватывать с 44px вокруг — touch куда удобнее. */
-  .socket {
-    width: 16px;
-    height: 16px;
-  }
-  .socket::after {
-    content: '';
-    position: absolute;
-    inset: -14px;          /* 14*2 + 16 = 44px touch-target */
-    border-radius: 50%;
-  }
+  .socket { width: 16px; height: 16px; }
+  .socket::after { content: ''; position: absolute; inset: -14px; border-radius: 50%; }
   .socket-in  { left: -10px; }
   .socket-out { right: -10px; }
   .row .socket-in  { left: -2.4rem; }
   .row .socket-out { right: -2.4rem; }
-  .row .socket-in,
-  .row .socket-out { margin-top: -8px; }
-
-  /* Кнопки крупнее */
+  .row .socket-in, .row .socket-out { margin-top: -8px; }
   button { padding: 0.7rem 1.1rem; font-size: 1rem; }
   .palette-item { padding: 0.6rem 0.8rem; font-size: 0.9rem; }
-
-  /* Слайдеры — толще thumb */
   .param input[type="range"] { height: 6px; }
   .param input[type="range"]::-webkit-slider-thumb { width: 28px; height: 28px; }
   .param input[type="range"]::-moz-range-thumb { width: 28px; height: 28px; }
-
-  /* Меньше hover-эффектов которые раздражают на touch */
   button:hover { transform: none; }
   .socket:hover { transform: none; }
-
-  /* Подсказку про "колесо/пробел" прячем — на iPad этого нет */
   #hint { display: none; }
 }
 
-/* ── Статус-бар ────────────────────────────────────────────────────────── */
+/* ── Statusbar ───────────────────────────────────────────────────── */
 #statusbar {
   position: fixed;
   bottom: 0.7rem;
@@ -1020,68 +731,116 @@ button:active { transform: translateY(0); }
   align-items: center;
   gap: 0.6rem;
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(10, 10, 20, 0.7);
+  color: rgba(255,255,255,0.7);
+  background: rgba(0,0,0,0.7);
   backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   padding: 0.4rem 0.8rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
   pointer-events: none;
   font-variant-numeric: tabular-nums;
   max-width: 60vw;
   overflow: hidden;
 }
 #statusbar > span { white-space: nowrap; }
-#status-fps { color: #feef33; font-weight: 600; }
-#status-list { opacity: 0.6; overflow: hidden; text-overflow: ellipsis; }
-.status-ok  { color: #feef33; }
-.status-bad { color: #ff4d2e; }
-.status-pending { color: #feef33; }
+#status-fps { color: var(--yellow); font-weight: 700; }
+.status-ok  { color: var(--yellow); }
+.status-bad { color: var(--pink); }
+.status-pending { color: var(--yellow); }
 
-/* ── Палитра нод ───────────────────────────────────────────────────────── */
+/* ── Палитра — v2: поиск + цветные полоски ──────────────────────── */
 #palette {
   position: fixed;
-  top: 3.2rem;
+  top: 3.4rem;
   left: 0.7rem;
-  /* bottom вместо max-height — палитра тянется до scene-bar и safe-area
-     включает scene-bar (~3rem) + buffer + iPad home indicator */
   bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
-  z-index: 50;
-  background: rgba(10, 10, 20, 0.92);
+  z-index: 40;
+  background: rgba(0,0,0,0.94);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 0.55rem;
-  width: 220px;
-  overflow-y: auto;
-  overscroll-behavior: contain; /* не дёргать родитель при достижении края */
-  -webkit-overflow-scrolling: touch; /* плавный inertia-scroll на iOS */
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.6rem;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  overflow: hidden;
 }
-/* На iPad / узких экранах — палитра шире */
 @media (hover: none) and (pointer: coarse), (max-width: 900px) {
-  #palette {
-    width: min(320px, calc(100vw - 1.4rem));
-    top: 4rem;
-    bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
-  }
+  #palette { width: min(320px, calc(100vw - 1.4rem)); top: 4rem; }
 }
-/* Узкие портретные экраны — header может переноситься во 2-ю строку,
-   палитра должна стартовать ниже чтобы не перекрывалась */
 @media (max-width: 760px) and (orientation: portrait) {
   #palette { top: 7rem; }
 }
-/* ── Палитра нод — категории с цветной полоской слева ──────────────────── */
-.palette-cat {
-  margin-bottom: 0.5rem;
+
+/* Поисковая строка внутри палитры */
+.palette-search-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.palette-search-wrap input {
+  width: 100%;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  padding: 0.5rem 2.2rem 0.5rem 1.9rem;
+  font-family: inherit;
+  font-size: 0.78rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.palette-search-wrap input:focus { border-color: var(--pink); }
+.palette-search-wrap::before {
+  content: '⌕';
+  position: absolute;
+  left: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.85rem;
+  color: var(--muted);
+  pointer-events: none;
+}
+.palette-search-wrap kbd {
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.6rem;
+  font-family: ui-monospace, monospace;
+  color: var(--muted);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--line);
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+}
+
+/* Скролл-зона палитры */
+.pal-scroll, #pal-scroll {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-right: 0.15rem;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.pal-scroll::-webkit-scrollbar, #pal-scroll::-webkit-scrollbar { width: 6px; }
+.pal-scroll::-webkit-scrollbar-thumb, #pal-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+.pal-scroll::-webkit-scrollbar-track, #pal-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* Категории в палитре — v2 полоска слева */
+.palette-cat, .cat {
   position: relative;
   padding-left: 0.55rem;
+  margin-bottom: 0.35rem;
 }
-.palette-cat:last-child { margin-bottom: 0; }
+.palette-cat:last-child, .cat:last-child { margin-bottom: 0; }
 
-/* Цветная вертикальная полоска слева — маркер категории */
-.palette-cat[data-cat]::before {
+.palette-cat::before, .cat::before {
   content: '';
   position: absolute;
   left: 0;
@@ -1089,39 +848,48 @@ button:active { transform: translateY(0); }
   bottom: 0.2rem;
   width: 3px;
   border-radius: 2px;
+  background: var(--cat-color, var(--pink));
   opacity: 0.85;
 }
-.palette-cat[data-cat="sources"]::before  { background: var(--yellow); }
-.palette-cat[data-cat="analysis"]::before { background: var(--lavender); }
-.palette-cat[data-cat="effects"]::before  { background: var(--pink); }
-.palette-cat[data-cat="routing"]::before  { background: var(--blue); }
-.palette-cat[data-cat="output"]::before   { background: #ffffff; }
 
-.palette-cat-title {
+/* Цвета категорий через --cat-color */
+.palette-cat[data-cat="sources"],  .cat[data-cat="sources"]  { --cat-color: var(--yellow); }
+.palette-cat[data-cat="analysis"], .cat[data-cat="analysis"] { --cat-color: var(--blue); }
+.palette-cat[data-cat="effects"],  .cat[data-cat="effects"]  { --cat-color: var(--pink); }
+.palette-cat[data-cat="routing"],  .cat[data-cat="routing"]  { --cat-color: var(--lavender); }
+.palette-cat[data-cat="output"],   .cat[data-cat="output"]   { --cat-color: #ffffff; }
+
+.palette-cat-title, .cat-title {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   font-size: 0.62rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.7;
+  letter-spacing: 0.12em;
   font-weight: 700;
-  margin-bottom: 0.25rem;
+  color: var(--cat-color, var(--pink));
+  margin: 0.2rem 0 0.25rem;
   padding-left: 0.15rem;
 }
-/* Заголовок тоже подкрашиваем под цвет категории */
-.palette-cat[data-cat="sources"]  .palette-cat-title { color: var(--yellow); }
-.palette-cat[data-cat="analysis"] .palette-cat-title { color: var(--lavender); }
-.palette-cat[data-cat="effects"]  .palette-cat-title { color: var(--pink); }
-.palette-cat[data-cat="routing"]  .palette-cat-title { color: var(--blue); }
-.palette-cat[data-cat="output"]   .palette-cat-title { color: #ffffff; }
+.palette-cat-title .count, .cat-title .count {
+  margin-left: auto;
+  color: var(--muted);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
 
-.palette-item {
-  display: block;
+/* Элементы палитры — v2 */
+.palette-item, .pal-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   width: 100%;
-  text-align: left;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255,255,255,0.03);
   color: white;
   border: 1px solid transparent;
-  border-radius: 6px;
-  padding: 0.32rem 0.55rem;
+  border-radius: 7px;
+  padding: 0.4rem 0.55rem;
   margin: 0 0 0.15rem 0;
   cursor: pointer;
   font-size: 0.76rem;
@@ -1129,45 +897,104 @@ button:active { transform: translateY(0); }
   font-weight: 500;
   box-shadow: none;
   transition: background 0.12s, border-color 0.12s;
+  text-align: left;
 }
-/* hover — окрашиваем рамку в цвет категории */
-.palette-item[data-cat="sources"]:hover  { background: rgba(254, 239, 51, 0.18); border-color: rgba(254, 239, 51, 0.45); }
-.palette-item[data-cat="analysis"]:hover { background: rgba(196, 168, 255, 0.18); border-color: rgba(196, 168, 255, 0.45); }
-.palette-item[data-cat="effects"]:hover  { background: rgba(255, 77, 46, 0.18); border-color: rgba(255, 77, 46, 0.45); }
-.palette-item[data-cat="routing"]:hover  { background: rgba(0, 229, 213, 0.18); border-color: rgba(0, 229, 213, 0.45); }
-.palette-item[data-cat="output"]:hover   { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.4); }
+.palette-item:hover, .pal-item:hover { background: rgba(255,77,46,0.18); border-color: rgba(255,77,46,0.35); }
 
-/* ── Нода (DETAILS-карточка) ───────────────────────────────────────────── */
+/* Hover по цвету категории */
+.palette-item[data-cat="sources"]:hover,  .cat[data-cat="sources"]  .pal-item:hover { background: rgba(254,239,51,0.18); border-color: rgba(254,239,51,0.45); }
+.palette-item[data-cat="analysis"]:hover, .cat[data-cat="analysis"] .pal-item:hover { background: rgba(0,229,213,0.18);  border-color: rgba(0,229,213,0.45); }
+.palette-item[data-cat="effects"]:hover,  .cat[data-cat="effects"]  .pal-item:hover { background: rgba(255,77,46,0.18);  border-color: rgba(255,77,46,0.45); }
+.palette-item[data-cat="routing"]:hover,  .cat[data-cat="routing"]  .pal-item:hover { background: rgba(196,168,255,0.18); border-color: rgba(196,168,255,0.45); }
+.palette-item[data-cat="output"]:hover,   .cat[data-cat="output"]   .pal-item:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.4); }
+
+.palette-item .ico, .pal-item .ico { font-size: 0.95rem; width: 18px; text-align: center; flex-shrink: 0; }
+.palette-item .nm,  .pal-item .nm  { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.palette-item .out-types, .pal-item .out-types { display: flex; gap: 3px; flex-shrink: 0; }
+.palette-item .out-types span, .pal-item .out-types span { width: 7px; height: 7px; border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.5); }
+.palette-item mark, .pal-item mark { background: rgba(254,239,51,0.3); color: var(--yellow); border-radius: 2px; padding: 0 1px; }
+
+.pal-empty {
+  padding: 2rem 0.5rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.pal-empty kbd {
+  font-family: ui-monospace, monospace;
+  background: rgba(255,255,255,0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  font-size: 0.65rem;
+}
+
+/* ── НОДА — v2 ───────────────────────────────────────────────────── */
 .node {
   position: absolute;
   pointer-events: auto;
-  background: rgba(14, 14, 14, 0.92);
+  background: rgba(14,14,14,0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 18px;
-  /* Тонкая контрастная рамка — цвет зависит от категории ноды (см. ниже) */
-  border: 1px solid var(--yellow);
-  padding: 0.32rem 0.55rem;
-  min-width: 150px;
-  max-width: 188px;
-  font-size: 0.66rem;
+  border: 1px solid var(--line);
+  padding: 0.55rem 0.7rem;
+  min-width: 180px;
+  max-width: 220px;
+  font-size: 0.7rem;
   user-select: none;
   -webkit-user-select: none;
   z-index: 2;
   transition: box-shadow 0.15s, border-color 0.15s;
 }
+
+/* Цветная полоска слева — v2: с glow */
+.node::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 18%;
+  bottom: 18%;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--cat-color, var(--pink));
+  box-shadow: 0 0 8px var(--cat-color, var(--pink));
+  opacity: 0.7;
+  pointer-events: none;
+  transition: opacity 0.2s, box-shadow 0.2s;
+}
+
+/* Категория → --cat-color */
+.node[data-cat="sources"]  { --cat-color: var(--yellow); }
+.node[data-cat="analysis"] { --cat-color: var(--blue); }
+.node[data-cat="effects"]  { --cat-color: var(--pink); }
+.node[data-cat="routing"]  { --cat-color: var(--lavender); }
+.node[data-cat="output"]   { --cat-color: #ffffff; }
+
+/* Рамка ноды в цвет категории (тонкая, видимая) */
+.node[data-cat] { border-color: color-mix(in srgb, var(--cat-color) 30%, transparent); }
+
 .node.dragging {
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 77, 46, 0.4);
+  box-shadow: 0 14px 36px rgba(0,0,0,0.55);
+  border-color: rgba(255,77,46,0.4);
   z-index: 10;
 }
 
-/* В .collapsed скрывается ВСЯ свёрнутая зона (.node-body) — параметры,
-   статусы, кнопки. Always-зона (превью + слайдер вывода) видна всегда. */
+/* Активная нода — пульс полоски + рамка желтеет */
+.node.active { border-color: rgba(254,239,51,0.35); }
+.node.active::before {
+  opacity: 1;
+  animation: lups-node-pulse 1.6s ease-in-out infinite;
+}
+@keyframes lups-node-pulse {
+  0%, 100% { opacity: 0.5; box-shadow: 0 0 4px var(--cat-color); }
+  50%       { opacity: 1;   box-shadow: 0 0 14px var(--cat-color); }
+}
+
+/* ── Collapsed / always / body ───────────────────────────────────── */
 .node.collapsed .node-body { display: none; }
 .node.collapsed .node-arrow { transform: rotate(-90deg); }
 
-/* Always — только превью и слайдер «вывод» */
 .node-always {
   margin-top: 0.35rem;
   display: flex;
@@ -1176,36 +1003,44 @@ button:active { transform: translateY(0); }
 }
 .node-always:empty { display: none; }
 
-/* Body — всё остальное (параметры, сокеты-строки, init-UI), скрыто при collapsed */
 .node-body {
   display: flex;
   flex-direction: column;
-  gap: 0.24rem;
-  margin-top: 0.3rem;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
 }
 .node-body:empty { display: none; }
 
-/* Превью внутри ноды — большое чёрное окошко 16:9 */
+/* ── Preview canvas — v2: aspect-ratio 16/9 ─────────────────────── */
 .node-preview {
-  margin-top: 0.25rem;
+  margin-top: 0.3rem;
   background: #000;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255,255,255,0.06);
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.3);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  position: relative;
 }
 .node-preview canvas {
-  display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  display: block;
   transition: opacity 0.15s;
 }
 
-/* Универсальный слайдер «вывод» + слой — компактный, ОДНА строка под превью */
+/* ── Output slider (always-zone) ─────────────────────────────────── */
 .param.param-output {
   margin-top: 0.25rem;
   padding: 0.25rem 0.4rem;
-  background: rgba(254, 239, 51, 0.05);
-  border: 1px solid rgba(254, 239, 51, 0.15);
+  background: rgba(254,239,51,0.05);
+  border: 1px solid rgba(254,239,51,0.15);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -1217,16 +1052,14 @@ button:active { transform: translateY(0); }
   flex: 1 0 100%;
   font-size: 0.65rem;
   padding: 0.15rem 0.3rem;
-  background: rgba(0, 0, 0, 0.35);
-  color: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0,0,0,0.35);
+  color: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 4px;
   outline: none;
   cursor: pointer;
 }
-.param.param-output .blend-select:hover {
-  border-color: rgba(254, 239, 51, 0.4);
-}
+.param.param-output .blend-select:hover { border-color: rgba(254,239,51,0.4); }
 .param.param-output .param-head {
   font-size: 0.55rem;
   text-transform: uppercase;
@@ -1243,7 +1076,7 @@ button:active { transform: translateY(0); }
   font-weight: 600;
   min-width: 28px;
   text-align: right;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255,255,255,0.85);
 }
 .param.param-output input[type=range] {
   flex: 1;
@@ -1251,62 +1084,57 @@ button:active { transform: translateY(0); }
   height: 14px;
   margin: 0;
 }
-/* Управление слоем — мини-кнопки ▼/▲ и число справа */
 .param.param-output .layer-row {
   display: flex;
   align-items: center;
   gap: 2px;
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 1px solid rgba(255,255,255,0.12);
   padding-left: 0.4rem;
 }
-.param.param-output .layer-label {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  opacity: 0.5;
-  font-weight: 700;
-  font-size: 0.5rem;
-  margin-right: 0.15rem;
-}
+.param.param-output .layer-label { text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.5; font-weight: 700; font-size: 0.5rem; margin-right: 0.15rem; }
 .param.param-output .layer-btn {
-  width: 14px;
-  height: 14px;
+  width: 14px; height: 14px;
   padding: 0;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
   border-radius: 3px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255,255,255,0.85);
   font-size: 0.5rem;
   line-height: 1;
   cursor: pointer;
   box-shadow: none;
 }
-.param.param-output .layer-btn:hover {
-  background: var(--cat-color, var(--yellow));
-  color: #000;
-  transform: none;
-}
-.param.param-output .layer-num {
-  font-family: ui-monospace, monospace;
-  min-width: 16px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 0.6rem;
-  color: var(--cat-color, var(--yellow));
-}
+.param.param-output .layer-btn:hover { background: var(--cat-color, var(--yellow)); color: #000; transform: none; }
+.param.param-output .layer-num { font-family: ui-monospace, monospace; min-width: 16px; text-align: center; font-weight: 700; font-size: 0.6rem; color: var(--cat-color, var(--yellow)); }
 
+/* ── Node header ─────────────────────────────────────────────────── */
 .node-header {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   font-weight: 600;
-  font-size: 0.74rem;
+  font-size: 0.78rem;
   cursor: grab;
 }
 .node.dragging .node-header { cursor: grabbing; }
+.node-icon { font-size: 0.9rem; line-height: 1; }
+.node-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.node-icon { font-size: 0.8rem; line-height: 1; }
-.node-name { flex: 1; }
+/* LIVE badge — v2: outline style, не заливка */
+.node-header .live-badge {
+  display: none;
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.08rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(254,239,51,0.18);
+  color: var(--yellow);
+  font-weight: 700;
+  margin-left: 0.2rem;
+  flex-shrink: 0;
+}
+.node.active .node-header .live-badge { display: inline-block; }
 
 .node-btn {
   background: transparent;
@@ -1314,14 +1142,14 @@ button:active { transform: translateY(0); }
   padding: 0 0.18rem;
   font-size: 0.78rem;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255,255,255,0.5);
   cursor: pointer;
   box-shadow: none;
   font-weight: normal;
   transition: color 0.15s;
 }
 .node-btn:hover { color: white; background: transparent; transform: none; }
-.node-btn[data-action="close"]:hover { color: #ff4d2e; }
+.node-btn[data-action="close"]:hover { color: var(--pink); }
 
 .node-arrow {
   opacity: 0.6;
@@ -1334,69 +1162,256 @@ button:active { transform: translateY(0); }
   text-align: center;
 }
 .node-arrow:hover { opacity: 1; }
-details.node[open] .node-arrow { transform: rotate(180deg); }
 
-.node-body {
-  margin-top: 0.3rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.24rem;
+/* Header sockets */
+.socket.socket-hdr {
+  position: relative;
+  left: auto; right: auto;
+  width: 11px; height: 11px;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
-/* Параметры — компактные */
-.param { gap: 0.12rem; }
-.param-head { font-size: 0.6rem; }
-.param input[type="range"] { height: 3px; }
-.param input[type="range"]::-webkit-slider-thumb { width: 11px; height: 11px; }
-.param select.param-select { padding: 0.22rem 0.35rem; font-size: 0.7rem; }
+.hdr-socks-in, .hdr-socks-out {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hdr-socks-in  { margin-right: 0.3rem; margin-left: -2px; }
+.hdr-socks-out { margin-left: 0.2rem;  margin-right: -2px; }
 
-/* ── Сокеты: цвет = ТИП сигнала ────────────────────────────────────────── */
-/*
-   видео   — зелёный  #feef33
-   звук    — синий    #00e5d5
-   число   — жёлтый   #feef33
-   триггер — красный  #ff4d2e
-*/
+/* ── Сокеты — v2: flow ring + trigger fire ───────────────────────── */
 .socket {
   position: absolute;
   width: 12px;
   height: 12px;
-  border: 2px solid rgba(10, 10, 20, 0.95);
+  border: 2px solid rgba(0,0,0,0.95);
   border-radius: 50%;
   z-index: 3;
   pointer-events: auto;
   cursor: crosshair;
-  transition: box-shadow 0.12s, transform 0.12s;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+  transition: transform 0.12s, box-shadow 0.12s;
+  box-shadow: 0 0 6px rgba(0,0,0,0.4);
 }
 .socket:hover {
-  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.22), 0 0 6px rgba(0, 0, 0, 0.4);
+  transform: scale(1.3);
+  box-shadow: 0 0 0 5px rgba(255,255,255,0.18);
   z-index: 4;
-  transform: scale(1.2);
 }
-/* Положение: вход слева, выход справа */
+
+.socket[data-type="video"]   { background: var(--green); }
+.socket[data-type="audio"]   { background: var(--blue); }
+.socket[data-type="number"]  { background: var(--lavender); }
+.socket[data-type="trigger"] { background: var(--red); }
+
+/* Flow ring — непрерывный сигнал (video/audio/number) */
+.socket-out.socket-live::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: socket-ring 1s ease-out infinite;
+}
+.socket-out.socket-live[data-type="video"]   { color: var(--green); }
+.socket-out.socket-live[data-type="audio"]   { color: var(--blue); }
+.socket-out.socket-live[data-type="number"]  { color: var(--lavender); }
+.socket-out.socket-live[data-type="trigger"] { color: var(--red); }
+@keyframes socket-ring {
+  0%   { opacity: 0.7; transform: scale(0.8); }
+  100% { opacity: 0;   transform: scale(2); }
+}
+
+/* Trigger fire — мгновенная вспышка */
+.socket.socket-fire {
+  animation: socket-fire 0.35s ease-out;
+}
+@keyframes socket-fire {
+  0%   { transform: scale(2.2); box-shadow: 0 0 0 10px rgba(255,77,46,0.4); }
+  100% { transform: scale(1);   box-shadow: 0 0 6px rgba(0,0,0,0.4); }
+}
+
+/* Socket positions */
 .socket-in  { left: -8px; }
 .socket-out { right: -8px; }
 
-/* Контекстное меню ноды — пункт */
-.node-ctx-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0.4rem 0.6rem;
-  background: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 0.82rem;
-  font-family: inherit;
-  box-shadow: none;
+/* Rows */
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 18px;
+  font-size: 0.66rem;
 }
-.node-ctx-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+.row.row-out { justify-content: flex-end; text-align: right; }
+.row .socket-in,
+.row .socket-out { top: 50%; margin-top: -6px; }
+.row .socket-in  { left: -1.4rem; }
+.row .socket-out { right: -1.4rem; }
+.row-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  font-weight: 600;
 }
 
-/* ── Режим «проектор»: скрываем весь UI, остаётся только stage ──────── */
+/* ── Параметры ───────────────────────────────────────────────────── */
+.param {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.param-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  font-weight: 600;
+}
+.param-value {
+  font-variant-numeric: tabular-nums;
+  color: rgba(255,255,255,0.9);
+  opacity: 1;
+  font-weight: 600;
+}
+.param input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.param input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 12px; height: 12px;
+  background: var(--pink);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid rgba(0,0,0,1);
+  box-shadow: 0 2px 6px rgba(255,77,46,0.4);
+}
+.param input[type="range"]::-moz-range-thumb {
+  width: 12px; height: 12px;
+  background: var(--pink);
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid rgba(0,0,0,1);
+}
+
+/* MIDI badge — v2 */
+.param-head .midi-badge {
+  font-family: ui-monospace, monospace;
+  font-size: 0.55rem;
+  background: rgba(196,168,255,0.2);
+  color: var(--blue);
+  border: 1px solid rgba(196,168,255,0.45);
+  padding: 0 0.3rem;
+  border-radius: 3px;
+  margin-left: 0.3rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+.param-head .midi-badge.learning {
+  background: var(--pink);
+  color: white;
+  border-color: var(--pink);
+  animation: midi-learn 1s ease-in-out infinite;
+}
+@keyframes midi-learn {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,77,46,0.5); }
+  50%       { box-shadow: 0 0 0 5px rgba(255,77,46,0); }
+}
+
+/* Select */
+.param select, select.param-select {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: white;
+  padding: 0.3rem 0.5rem;
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Meter bar */
+.bar, .meter {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.bar > div, .meter > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), var(--pink));
+  width: 0%;
+  transition: width 0.08s linear;
+}
+
+/* Selected node */
+.node.selected {
+  outline: 2px solid var(--yellow);
+  outline-offset: 3px;
+  box-shadow: 0 0 22px rgba(254,239,51,0.35);
+}
+
+/* Ctx menu item */
+.node-ctx-item {
+  display: block; width: 100%; text-align: left;
+  padding: 0.4rem 0.6rem;
+  background: transparent; border: none;
+  color: white; cursor: pointer;
+  border-radius: 4px; font-size: 0.82rem;
+  font-family: inherit; box-shadow: none;
+}
+.node-ctx-item:hover { background: rgba(255,255,255,0.08); }
+
+/* Groups */
+.group-header {
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+  font-weight: 700;
+  margin: 0.4rem 0 0.1rem;
+  padding: 0.3rem 0.3rem 0.05rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  user-select: none;
+}
+.group-header:hover { opacity: 1; }
+.group-arrow { display: inline-block; transition: transform 0.15s; font-size: 0.55rem; opacity: 0.6; }
+.group-label { flex: 1; }
+.group-count { opacity: 0.4; font-weight: 400; }
+
+/* Socket labels */
+.socket-label {
+  position: absolute;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.socket-label-in  { left: 12px; transform: translateY(-50%); }
+.socket-label-out { right: 12px; transform: translateY(-50%); text-align: right; }
+
+/* ── Projector mode ──────────────────────────────────────────────── */
 body.projector-mode #dock,
 body.projector-mode #dots-bg,
 body.projector-mode #wires,
@@ -1415,410 +1430,84 @@ body.projector-mode #scene-import-btn,
 body.projector-mode #scene-export-btn,
 body.projector-mode #master-fade-wrap,
 body.projector-mode #fps-mobile-wrap,
-body.projector-mode #clear-all-btn {
-  display: none !important;
-}
-body.projector-mode #stage {
-  z-index: 9999 !important;
-}
+body.projector-mode #clear-all-btn { display: none !important; }
+body.projector-mode #stage { z-index: 9999 !important; }
 body.projector-mode { cursor: none; }
-/* Стрим-кнопка тоже спрятана в режиме — выход через двойной тап */
 body.projector-mode #stream-btn { display: none !important; }
 
-/* ── Кнопка «📝 Фидбек» — левый нижний угол ──────────────────────── */
+/* ── Feedback ────────────────────────────────────────────────────── */
 #feedback-btn {
   position: fixed;
   left: 0.7rem;
   bottom: max(0.7rem, env(safe-area-inset-bottom, 0.7rem));
   z-index: 60;
-  width: 2.4rem;
-  height: 2.4rem;
-  padding: 0;
+  width: 2.4rem; height: 2.4rem; padding: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.9);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
   font-size: 1.05rem;
-  cursor: pointer;
 }
-#feedback-btn:hover {
-  background: rgba(254, 239, 51, 0.18);
-  border-color: rgba(254, 239, 51, 0.4);
-  transform: translateY(-1px);
-}
+#feedback-btn:hover { background: rgba(254,239,51,0.18); border-color: rgba(254,239,51,0.4); transform: translateY(-1px); }
 
 .fb-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9500;
-  background: rgba(0, 0, 0, 0.55);
+  position: fixed; inset: 0; z-index: 9500;
+  background: rgba(0,0,0,0.55);
   backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
+  display: flex; align-items: flex-end; justify-content: flex-start;
   padding: 1rem;
 }
 .fb-modal {
   background: #1a1d2e;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 14px;
   padding: 1rem 1.1rem;
   width: min(420px, calc(100vw - 2rem));
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
   margin-bottom: max(3.4rem, calc(env(safe-area-inset-bottom, 0px) + 3.4rem));
 }
-.fb-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-.fb-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--yellow);
-  letter-spacing: 0.02em;
-}
-.fb-close {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 0.2rem 0.4rem;
-  box-shadow: none;
-}
+.fb-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.fb-title { font-size: 0.95rem; font-weight: 700; color: var(--yellow); letter-spacing: 0.02em; }
+.fb-close { background: transparent; border: none; color: rgba(255,255,255,0.55); font-size: 1.1rem; cursor: pointer; padding: 0.2rem 0.4rem; box-shadow: none; }
 .fb-close:hover { color: white; }
 .fb-row { margin-top: 0.55rem; }
-.fb-row label {
-  display: block;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.65;
-  font-weight: 600;
-  margin-bottom: 0.2rem;
-}
-.fb-row input,
-.fb-row textarea {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  color: white;
-  padding: 0.5rem 0.6rem;
-  font-family: inherit;
-  font-size: 0.85rem;
-  outline: none;
-  resize: vertical;
-}
-.fb-row input:focus,
-.fb-row textarea:focus { border-color: rgba(254, 239, 51, 0.4); }
-.fb-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.7rem;
-  justify-content: flex-end;
-}
-.fb-send {
-  background: var(--yellow);
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  padding: 0.55rem 1rem;
-  font-weight: 700;
-  font-size: 0.85rem;
-  cursor: pointer;
-  font-family: inherit;
-}
+.fb-row label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.65; font-weight: 600; margin-bottom: 0.2rem; }
+.fb-row input, .fb-row textarea { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 0.5rem 0.6rem; font-family: inherit; font-size: 0.85rem; outline: none; resize: vertical; }
+.fb-row input:focus, .fb-row textarea:focus { border-color: rgba(254,239,51,0.4); }
+.fb-actions { display: flex; gap: 0.5rem; margin-top: 0.7rem; justify-content: flex-end; }
+.fb-send { background: var(--yellow); color: #000; border: none; border-radius: 8px; padding: 0.55rem 1rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: inherit; }
 .fb-send:hover { filter: brightness(0.95); }
-.fb-cancel {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.8);
-  border-radius: 8px;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-  font-family: inherit;
-  box-shadow: none;
-}
-.fb-help {
-  font-size: 0.65rem;
-  opacity: 0.5;
-  line-height: 1.4;
-  margin-top: 0.6rem;
-}
+.fb-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); border-radius: 8px; padding: 0.55rem 0.9rem; font-size: 0.85rem; cursor: pointer; font-family: inherit; box-shadow: none; }
+.fb-help { font-size: 0.65rem; opacity: 0.5; line-height: 1.4; margin-top: 0.6rem; }
 
-/* Multiselect — выделенные ноды */
-.node.selected {
-  outline: 2px solid #feef33;
-  outline-offset: 3px;
-  box-shadow: 0 0 22px rgba(254, 239, 51, 0.35);
-}
-
-/* Светящийся сокет — есть живой сигнал на выходе */
-.socket-out.socket-live {
-  box-shadow:
-    0 0 0 3px rgba(254, 239, 51, 0.22),
-    0 0 12px 2px rgba(254, 239, 51, 0.6),
-    0 0 6px rgba(0, 0, 0, 0.4);
-  animation: socket-pulse 1.6s ease-in-out infinite;
-}
-@keyframes socket-pulse {
-  0%, 100% { filter: brightness(1); }
-  50%      { filter: brightness(1.4); }
-}
-
-/* Сворачиваемые группы внутри ноды */
-.group-header {
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.7;
-  font-weight: 700;
-  margin: 0.4rem 0 0.1rem;
-  padding: 0.3rem 0.3rem 0.05rem;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  user-select: none;
-}
-.group-header:hover { opacity: 1; }
-.group-arrow {
-  display: inline-block;
-  transition: transform 0.15s;
-  font-size: 0.55rem;
-  opacity: 0.6;
-}
-.group-label { flex: 1; }
-.group-count { opacity: 0.4; font-weight: 400; }
-
-/* Header-сокеты — для video/audio видны прямо в шапке (даже при collapse).
-   Они НЕ absolute — встают inline в потоке header'а. */
-.socket.socket-hdr {
-  position: relative;
-  left: auto;
-  right: auto;
-  width: 11px;
-  height: 11px;
-  flex-shrink: 0;
-  display: inline-block;
-  vertical-align: middle;
-}
-.hdr-socks-in,
-.hdr-socks-out {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.hdr-socks-in  { margin-right: 0.3rem; margin-left: -2px; }
-.hdr-socks-out { margin-left: 0.2rem;  margin-right: -2px; }
-
-/* Цвета по типу */
-.socket[data-type="video"]   { background: var(--green); }    /* жёлтый */
-.socket[data-type="audio"]   { background: var(--blue); }     /* бирюзовый */
-.socket[data-type="number"]  { background: var(--lavender); } /* лавандовый — НЕ как video! */
-.socket[data-type="trigger"] { background: var(--red); }      /* оранж */
-
-/* ── Цвет рамки ноды по категории ──────────────────────────────────────── */
-/* Каждой ноде задаём CSS-переменную --cat-color — она используется и в
-   border, и в полоске-индикаторе слева (см. .node::before). */
-.node[data-cat="sources"]  { --cat-color: var(--yellow); }
-.node[data-cat="analysis"] { --cat-color: var(--lavender); }
-.node[data-cat="effects"]  { --cat-color: var(--pink); }
-.node[data-cat="routing"]  { --cat-color: var(--blue); }
-.node[data-cat="output"]   { --cat-color: #ffffff; }
-.node[data-cat]            { border-color: var(--cat-color); }
-
-/* Цветная вертикальная полоска слева внутри ноды — «маркер категории». */
-.node[data-cat]::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.55rem;
-  bottom: 0.55rem;
-  width: 4px;
-  border-radius: 0 3px 3px 0;
-  background: var(--cat-color);
-  opacity: 0.7;
-  pointer-events: none;
-  transition: opacity 0.2s, box-shadow 0.2s;
-}
-
-/* При drag — рамка ярче и появляется мягкое свечение в цвете категории */
-.node.dragging[data-cat] {
-  box-shadow: 0 0 0 1px var(--cat-color), 0 12px 36px rgba(0,0,0,0.5);
-}
-
-/* ── ИНДИКАТОР АКТИВНОСТИ ноды ──────────────────────────────────────────
-   Когда нода реально работает (есть выходные данные + подключена к чему-то) —
-   класс .node.active. Полоска слева начинает пульсировать в цвет категории,
-   а в шапке появляется маленький бейдж LIVE. */
-.node.active[data-cat]::before {
-  opacity: 1;
-  animation: lups-node-pulse 1.6s ease-in-out infinite;
-}
-@keyframes lups-node-pulse {
-  0%, 100% { box-shadow: 0 0 4px var(--cat-color), 0 0 0 0 var(--cat-color); }
-  50%      { box-shadow: 0 0 14px var(--cat-color), 0 0 0 1px var(--cat-color); }
-}
-/* Бейдж LIVE — добавляется в .node-header через CSS, никаких изменений HTML */
-.node-header .live-badge {
-  display: none;
-  font-size: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 0.05rem 0.3rem;
-  border-radius: 3px;
-  background: var(--cat-color, var(--yellow));
-  color: #000;
-  font-weight: 800;
-  margin-left: 0.2rem;
-  line-height: 1.2;
-  flex-shrink: 0;
-}
-.node.active .node-header .live-badge { display: inline-block; }
-
-/* Подпись сокета: рядом с ним, не пересекается с другими */
-.socket-label {
-  position: absolute;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.55);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  pointer-events: none;
-  white-space: nowrap;
-}
-.socket-label-in  { left: 12px; transform: translateY(-50%); }
-.socket-label-out { right: 12px; transform: translateY(-50%); text-align: right; }
-
-/* ── Ряд параметра/сокета внутри ноды ──────────────────────────────────── */
-.row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-height: 18px;
-  font-size: 0.66rem;
-}
-.row.row-out { justify-content: flex-end; text-align: right; }
-
-/* Сокеты в строках ноды торчат за пределы карточки на ~8px */
-.row .socket-in,
-.row .socket-out {
-  top: 50%;
-  margin-top: -6px;
-}
-.row .socket-in  { left: -1.6rem; }
-.row .socket-out { right: -1.6rem; }
-
-.row-label {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.65;
-  font-weight: 600;
-}
-
-/* ── Слайдер (универсальный, единственный способ ввода чисел) ──────────── */
-.param {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-.param-head {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  opacity: 0.65;
-  font-weight: 600;
-}
-.param-value {
-  font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, 0.85);
-  opacity: 1;
-  font-weight: 600;
-}
-.param input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-}
-.param input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  background: #ff4d2e;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid rgba(10, 10, 20, 1);
-  box-shadow: 0 2px 6px rgba(255, 77, 46, 0.4);
-}
-.param input[type="range"]::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  background: #ff4d2e;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid rgba(10, 10, 20, 1);
-}
-
-/* ── Селект (для пресетов) ─────────────────────────────────────────────── */
-.param select,
-select.param-select {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+/* ── Toast ───────────────────────────────────────────────────────── */
+#toast {
+  position: fixed;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  background: rgba(255,77,46,0.95);
   color: white;
-  padding: 0.3rem 0.5rem;
-  font-family: inherit;
-  font-size: 0.8rem;
-  cursor: pointer;
-  outline: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  box-shadow: 0 6px 28px rgba(255,77,46,0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
 }
+#toast.show { opacity: 1; transform: translate(-50%, -8px); }
 
-/* Метр-полоска — для аудио-уровней */
-.bar {
-  flex: 1;
-  height: 5px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 2.5px;
-  overflow: hidden;
-}
-.bar > div {
-  height: 100%;
-  background: linear-gradient(90deg, #feef33, #ff4d2e);
-  width: 0%;
-  transition: width 0.05s linear;
-}
-
-/* ── Скроллбары палитры ────────────────────────────────────────────────── */
-#palette::-webkit-scrollbar { width: 6px; }
-#palette::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-#palette::-webkit-scrollbar-track { background: transparent; }
-
-/* ── Легенда «Сигналы» — слева снизу ───────────────────────────────────── */
+/* ── Legend ──────────────────────────────────────────────────────── */
 #legend {
   position: fixed;
   left: 0.7rem;
   bottom: 0.7rem;
-  z-index: 50;
-  background: rgba(14, 14, 14, 0.9);
+  z-index: 40;
+  background: rgba(14,14,14,0.9);
   backdrop-filter: blur(10px);
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -1829,86 +1518,45 @@ select.param-select {
   gap: 0.3rem;
   max-width: 230px;
 }
-#legend .ttl {
-  font-size: 0.58rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  opacity: 0.55;
-  font-weight: 700;
-  margin-bottom: 0.15rem;
-}
-#legend .row {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 0.65rem;
-  opacity: 0.85;
-  min-height: 14px;
-  position: static;
-  padding: 0;
-  background: none;
-  border: none;
-}
-#legend .dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
-}
+#legend .ttl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.5; font-weight: 700; margin-bottom: 0.15rem; }
+#legend .row { display: flex; align-items: center; gap: 0.45rem; opacity: 0.85; min-height: 14px; position: static; padding: 0; background: none; border: none; }
+#legend .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 0 1px rgba(0,0,0,0.5); }
 #legend .dot.video   { background: var(--green); }
 #legend .dot.audio   { background: var(--blue); }
 #legend .dot.number  { background: var(--lavender); }
 #legend .dot.trigger { background: var(--red); }
 
-/* ── Подсказка горячих клавиш — справа снизу ───────────────────────────── */
+/* ── Hotkeys — v2 ────────────────────────────────────────────────── */
 #hotkeys {
   position: fixed;
   right: 0.7rem;
   bottom: 0.7rem;
-  z-index: 50;
-  background: rgba(14, 14, 14, 0.9);
+  z-index: 40;
+  background: rgba(14,14,14,0.9);
   backdrop-filter: blur(10px);
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 0.65rem 0.85rem;
-  font-size: 0.7rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  max-width: 280px;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.4;
-}
-#hotkeys .ttl {
-  font-size: 0.58rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  opacity: 0.55;
-  font-weight: 700;
-  margin-bottom: 0.2rem;
-}
-#hotkeys .row {
-  font-size: 0.7rem;
-  background: none;
-  border: none;
-  padding: 0;
-}
-#hotkeys kbd {
-  display: inline-block;
-  font-family: ui-monospace, Menlo, monospace;
   font-size: 0.62rem;
-  padding: 0.05rem 0.35rem;
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  max-width: 230px;
+  line-height: 1.7;
+}
+#hotkeys .ttl { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.6; font-weight: 700; margin-bottom: 0.3rem; color: var(--ink); }
+#hotkeys b { color: rgba(255,255,255,0.85); font-weight: 600; }
+#hotkeys kbd {
+  font-family: ui-monospace, monospace;
+  font-size: 0.6rem;
+  padding: 1px 5px;
+  background: rgba(255,255,255,0.08);
   border: 1px solid var(--line);
-  border-radius: 4px;
-  color: white;
+  border-radius: 3px;
+  color: var(--ink);
 }
-@media (max-width: 700px) {
-  #hotkeys { display: none; }
-}
+#hotkeys .row { font-size: 0.7rem; background: none; border: none; padding: 0; }
+@media (max-width: 700px) { #hotkeys { display: none; } }
 
-/* ── Сцены 1-9 — нижняя плашка по центру ───────────────────────────────── */
+/* ── Scene bar — v2 ──────────────────────────────────────────────── */
 #scene-bar {
   position: fixed;
   bottom: 0.7rem;
@@ -1918,141 +1566,154 @@ select.param-select {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0,0,0,0.85);
   backdrop-filter: blur(10px);
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 0.35rem 0.55rem;
 }
-#scene-bar .lab {
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  opacity: 0.5;
-  font-weight: 700;
-  padding: 0 0.4rem 0 0.25rem;
-}
+#scene-bar .lab { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.14em; opacity: 0.5; font-weight: 700; padding: 0 0.4rem 0 0.25rem; }
+
 .slot {
-  width: 26px;
-  height: 26px;
+  width: 26px; height: 26px;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255,255,255,0.04);
   border: 1px solid var(--line);
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255,255,255,0.6);
   font-family: ui-monospace, monospace;
-  font-size: 0.72rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 0.72rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   transition: background 0.12s, color 0.12s, border-color 0.12s, transform 0.1s;
-  padding: 0;
-  box-shadow: none;
-}
-.slot:hover {
-  background: rgba(255, 77, 46, 0.18);
-  color: white;
-  border-color: rgba(255, 77, 46, 0.35);
-  transform: none;
-}
-.slot.filled {
-  background: rgba(254, 239, 51, 0.14);
-  color: var(--yellow);
-  border-color: rgba(254, 239, 51, 0.4);
-}
-.slot.active {
-  background: var(--yellow);
-  color: #000;
-  border-color: var(--yellow);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(254, 239, 51, 0.45);
-}
-
-/* Кнопка-крестик «очистить слот» — видна на hover ТОЛЬКО на заполненной сцене */
-.slot {
+  padding: 0; box-shadow: none;
   position: relative;
-  overflow: visible;
 }
+.slot:hover { background: rgba(255,77,46,0.18); color: white; border-color: rgba(255,77,46,0.35); transform: none; }
+.slot.filled { background: rgba(254,239,51,0.14); color: var(--yellow); border-color: rgba(254,239,51,0.4); }
+.slot.active { background: var(--yellow); color: #000; border-color: var(--yellow); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(254,239,51,0.45); }
+
 .slot .slot-x {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 14px;
-  height: 14px;
-  background: rgba(255, 77, 46, 0.95);
-  color: white;
-  border-radius: 50%;
-  font-size: 0.55rem;
-  line-height: 14px;
-  text-align: center;
-  font-weight: 700;
-  display: none;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  top: -6px; right: -6px;
+  width: 14px; height: 14px;
+  background: rgba(255,77,46,0.95);
+  color: white; border-radius: 50%;
+  font-size: 0.55rem; line-height: 14px; text-align: center;
+  font-weight: 700; display: none; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 .slot.filled:hover .slot-x { display: inline-block; }
 .slot .slot-x:hover { background: #ff6c4a; transform: scale(1.15); }
 
-/* Кнопка «очистить все сцены» — корзина в конце плашки */
 .slots-clear, .slots-export {
-  width: 26px;
-  height: 26px;
+  width: 26px; height: 26px;
   border-radius: 7px;
-  background: rgba(255, 77, 46, 0.12);
-  border: 1px solid rgba(255, 77, 46, 0.3);
-  color: rgba(255, 77, 46, 0.85);
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 0.25rem;
+  background: rgba(255,77,46,0.12);
+  border: 1px solid rgba(255,77,46,0.3);
+  color: rgba(255,77,46,0.85);
+  font-size: 0.85rem; cursor: pointer; padding: 0; margin-left: 0.25rem;
   box-shadow: none;
-  transition: background 0.12s;
 }
-.slots-clear:hover, .slots-export:hover {
-  background: rgba(255, 77, 46, 0.3);
-  color: white;
-  transform: none;
+.slots-clear:hover, .slots-export:hover { background: rgba(255,77,46,0.3); color: white; transform: none; }
+.slots-export { background: rgba(254,239,51,0.12); border-color: rgba(254,239,51,0.3); color: var(--yellow); }
+.slots-export:hover { background: rgba(254,239,51,0.3); }
+
+/* ── History bar — v2: top centre ───────────────────────────────── */
+#history-bar {
+  position: fixed;
+  left: 3.6rem;
+  bottom: max(0.7rem, env(safe-area-inset-bottom, 0.7rem));
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.25rem 0.4rem;
 }
-.slots-export {
-  background: rgba(254, 239, 51, 0.12);
-  border-color: rgba(254, 239, 51, 0.3);
-  color: var(--yellow);
+#history-bar button {
+  background: transparent; border: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem; cursor: pointer;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-family: inherit; line-height: 1;
+  transition: background 0.12s, color 0.12s;
+  box-shadow: none;
 }
-.slots-export:hover {
-  background: rgba(254, 239, 51, 0.3);
+#history-bar button:hover:not(:disabled) { background: rgba(255,77,46,0.25); color: white; }
+#history-bar button:disabled { opacity: 0.3; cursor: default; }
+#history-bar .sep { width: 1px; height: 14px; background: var(--line); }
+#history-bar .pos { font-size: 0.62rem; color: var(--muted); font-variant-numeric: tabular-nums; padding: 0 0.35rem; font-family: ui-monospace, monospace; }
+
+/* ── Frame-комментарии — v2 ─────────────────────────────────────── */
+.frame {
+  position: absolute;
+  border: 2px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+  background: rgba(255,255,255,0.015);
+  pointer-events: auto;
+  z-index: 1;
+  transition: border-color 0.15s, background 0.15s;
+}
+.frame:hover { border-color: rgba(254,239,51,0.5); background: rgba(254,239,51,0.04); }
+.frame.dragging { border-style: solid; border-color: var(--yellow); background: rgba(254,239,51,0.06); }
+.frame .ftitle {
+  position: absolute; top: -0.85rem; left: 1rem;
+  background: rgba(0,0,0,0.95);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.68rem; font-weight: 600; color: var(--yellow);
+  cursor: grab; font-family: inherit; outline: none; min-width: 60px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.frame .ftitle:focus { border-color: var(--yellow); background: #000; }
+.frame .fclose {
+  position: absolute; top: -0.65rem; right: 0.5rem;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.95);
+  border: 1px solid var(--line);
+  color: rgba(255,255,255,0.5);
+  font-size: 0.7rem; line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; box-shadow: none;
+}
+.frame .fclose:hover { color: var(--red); border-color: var(--red); background: rgba(0,0,0,0.95); transform: none; }
+.frame .fresize {
+  position: absolute; right: 0; bottom: 0;
+  width: 18px; height: 18px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, rgba(254,239,51,0.4) 50%);
+  border-bottom-right-radius: 14px;
 }
 
-/* Drag&drop индикатор — рамка по холсту когда тащишь файл */
+/* ── Drag & drop overlay ─────────────────────────────────────────── */
 body.dragover::after {
   content: '↓ отпусти файл здесь — создам ноду ↓';
-  position: fixed;
-  inset: 1rem;
+  position: fixed; inset: 1rem;
   border: 3px dashed var(--yellow);
   border-radius: 16px;
-  background: rgba(254, 239, 51, 0.04);
+  background: rgba(254,239,51,0.04);
   z-index: 9000;
   pointer-events: none;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  align-items: flex-start; justify-content: center;
   padding-top: 2rem;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--yellow);
-  letter-spacing: 0.05em;
+  font-size: 1rem; font-weight: 700;
+  color: var(--yellow); letter-spacing: 0.05em;
 }
 
-/* Модалка «Готовые шоу» */
+/* ── Templates modal ─────────────────────────────────────────────── */
 .templates-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9500;
-  background: rgba(0, 0, 0, 0.75);
+  position: fixed; inset: 0; z-index: 9500;
+  background: rgba(0,0,0,0.75);
   backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   padding: 2rem;
 }
 .templates-modal {
@@ -2061,312 +1722,36 @@ body.dragover::after {
   background: var(--bg-2);
   border: 1px solid var(--line);
   border-radius: 16px;
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
 }
 .templates-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; justify-content: space-between; align-items: center;
   padding: 1rem 1.2rem;
   border-bottom: 1px solid var(--line);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  font-weight: 700;
-  color: var(--yellow);
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em;
+  font-weight: 700; color: var(--yellow);
 }
-.templates-close {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 0 0.4rem;
-  box-shadow: none;
-}
+.templates-close { background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 1.1rem; cursor: pointer; padding: 0 0.4rem; box-shadow: none; }
 .templates-close:hover { color: white; transform: none; background: transparent; }
-.templates-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
-  padding: 1rem;
-  overflow-y: auto;
-}
-.tpl-cat-head {
-  grid-column: 1 / -1;
-  font-size: 0.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-weight: 800;
-  color: var(--yellow);
-  opacity: 0.7;
-  padding: 0.6rem 0 0.1rem;
-  border-bottom: 1px solid rgba(254, 239, 51, 0.2);
-}
+.templates-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; padding: 1rem; overflow-y: auto; }
+.tpl-cat-head { grid-column: 1 / -1; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.18em; font-weight: 800; color: var(--yellow); opacity: 0.7; padding: 0.6rem 0 0.1rem; border-bottom: 1px solid rgba(254,239,51,0.2); }
 .tpl-cat-head:first-child { padding-top: 0; }
-/* ── Хештеги в Cookbook ─────────────────────────────── */
-.tpl-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  padding: 0.4rem 0.8rem 0.6rem;
-  border-bottom: 1px solid var(--line);
-}
-.tpl-tag {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.85);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.2rem 0.6rem;
-  font-size: 0.72rem;
-  font-family: inherit;
-  cursor: pointer;
-  box-shadow: none;
-  transition: background 0.12s, border-color 0.12s;
-}
-.tpl-tag:hover {
-  background: rgba(254, 239, 51, 0.12);
-  border-color: rgba(254, 239, 51, 0.4);
-}
-.tpl-tag-active {
-  background: var(--yellow);
-  color: #000;
-  border-color: var(--yellow);
-  font-weight: 700;
-}
-.tpl-tag-count {
-  opacity: 0.55;
-  margin-left: 0.25rem;
-  font-size: 0.65rem;
-}
-.tpl-card-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  margin-top: 0.4rem;
-}
-.tpl-card-tag {
-  background: rgba(254, 239, 51, 0.12);
-  color: rgba(254, 239, 51, 0.95);
-  border-radius: 999px;
-  padding: 0.1rem 0.45rem;
-  font-size: 0.65rem;
-  cursor: pointer;
-  transition: background 0.12s;
-}
-.tpl-card-tag:hover { background: rgba(254, 239, 51, 0.25); }
-
-.tpl-card {
-  position: relative;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
-  text-align: left;
-  cursor: pointer;
-  color: white;
-  transition: background 0.12s, border-color 0.12s;
-  box-shadow: none;
-}
-.tpl-card:hover {
-  background: rgba(254, 239, 51, 0.08);
-  border-color: rgba(254, 239, 51, 0.4);
-  transform: none;
-}
-/* Пользовательские шаблоны — другая рамка-маркер */
-.tpl-card-user {
-  border-color: rgba(254, 239, 51, 0.3);
-  background: rgba(254, 239, 51, 0.04);
-}
-.tpl-card .tpl-x {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(255, 77, 46, 0.85);
-  border: none;
-  color: white;
-  font-size: 0.65rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 0;
-  cursor: pointer;
-  display: none;
-  box-shadow: none;
-}
+.tpl-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.4rem 0.8rem 0.6rem; border-bottom: 1px solid var(--line); }
+.tpl-tag { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.85); border: 1px solid var(--line); border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.72rem; font-family: inherit; cursor: pointer; box-shadow: none; transition: background 0.12s, border-color 0.12s; }
+.tpl-tag:hover { background: rgba(254,239,51,0.12); border-color: rgba(254,239,51,0.4); }
+.tpl-tag-active { background: var(--yellow); color: #000; border-color: var(--yellow); font-weight: 700; }
+.tpl-tag-count { opacity: 0.55; margin-left: 0.25rem; font-size: 0.65rem; }
+.tpl-card-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.4rem; }
+.tpl-card-tag { background: rgba(254,239,51,0.12); color: rgba(254,239,51,0.95); border-radius: 999px; padding: 0.1rem 0.45rem; font-size: 0.65rem; cursor: pointer; transition: background 0.12s; }
+.tpl-card-tag:hover { background: rgba(254,239,51,0.25); }
+.tpl-card { position: relative; background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 12px; padding: 0.85rem 1rem; text-align: left; cursor: pointer; color: white; transition: background 0.12s, border-color 0.12s; box-shadow: none; }
+.tpl-card:hover { background: rgba(254,239,51,0.08); border-color: rgba(254,239,51,0.4); transform: none; }
+.tpl-card-user { border-color: rgba(254,239,51,0.3); background: rgba(254,239,51,0.04); }
+.tpl-card .tpl-x { position: absolute; top: 6px; right: 6px; width: 18px; height: 18px; border-radius: 50%; background: rgba(255,77,46,0.85); border: none; color: white; font-size: 0.65rem; font-weight: 700; line-height: 1; padding: 0; cursor: pointer; display: none; box-shadow: none; }
 .tpl-card-user:hover .tpl-x { display: block; }
 .tpl-card .tpl-x:hover { background: var(--pink); transform: scale(1.15); }
-.tpl-name {
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin-bottom: 0.2rem;
-  color: var(--yellow);
-}
-.tpl-desc {
-  font-size: 0.7rem;
-  opacity: 0.75;
-  line-height: 1.4;
-}
-.templates-hint {
-  padding: 0.7rem 1.2rem;
-  border-top: 1px solid var(--line);
-  font-size: 0.65rem;
-  color: var(--muted);
-  text-align: center;
-}
-
-/* ── History-bar (undo/redo/save) — в шапке по центру ──────────────────── */
-#history-bar {
-  /* Слева внизу, сразу после кнопки 📝 фидбека (left: 0.7rem + 2.4rem кнопка + 0.5rem gap) */
-  position: fixed;
-  left: 3.6rem;
-  bottom: max(0.7rem, env(safe-area-inset-bottom, 0.7rem));
-  z-index: 45;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 0.25rem 0.4rem;
-}
-#history-bar button {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.85rem;
-  cursor: pointer;
-  padding: 0.25rem 0.55rem;
-  border-radius: 999px;
-  font-family: inherit;
-  line-height: 1;
-  transition: background 0.12s, color 0.12s;
-  box-shadow: none;
-}
-#history-bar button:hover:not(:disabled) {
-  background: rgba(255, 77, 46, 0.25);
-  color: white;
-}
-#history-bar button:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-#history-bar .sep {
-  width: 1px;
-  height: 14px;
-  background: var(--line);
-}
-#history-bar .pos {
-  font-size: 0.62rem;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  padding: 0 0.35rem;
-  font-family: ui-monospace, monospace;
-}
-
-/* ── Тост: всплывающее уведомление снизу по центру ─────────────────────── */
-#toast {
-  position: fixed;
-  bottom: 5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 60;
-  background: rgba(255, 77, 46, 0.95);
-  color: #fff;
-  padding: 0.6rem 1.1rem;
-  border-radius: 999px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  box-shadow: 0 6px 28px rgba(255, 77, 46, 0.4);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.25s, transform 0.25s;
-}
-#toast.show {
-  opacity: 1;
-  transform: translate(-50%, -8px);
-}
-
-/* ── Рамки-комментарии — группируют ноды на холсте ─────────────────────── */
-.frame {
-  position: absolute;
-  border: 3px dashed rgba(254, 239, 51, 0.6);  /* яркая жёлтая обводка */
-  border-radius: 14px;
-  background: rgba(254, 239, 51, 0.04);
-  pointer-events: auto;
-  /* Между фоном/svg-проводов (z-index 1) и нодами (z-index 2+) */
-  z-index: 1;
-  transition: border-color 0.15s, background 0.15s;
-}
-.frame:hover {
-  border-color: rgba(254, 239, 51, 0.95);
-  background:   rgba(254, 239, 51, 0.08);
-}
-.frame.dragging {
-  border-style: solid;
-  border-color: var(--yellow);
-  background: rgba(254, 239, 51, 0.06);
-}
-.frame .ftitle {
-  position: absolute;
-  top: -0.85rem;
-  left: 1rem;
-  background: rgba(0, 0, 0, 0.95);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 0.18rem 0.55rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: var(--yellow);
-  cursor: grab;
-  font-family: inherit;
-  outline: none;
-  min-width: 60px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.frame .ftitle:focus {
-  border-color: var(--yellow);
-  background: #000;
-}
-.frame .fclose {
-  position: absolute;
-  top: -0.65rem;
-  right: 0.5rem;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.95);
-  border: 1px solid var(--line);
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 0.7rem;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  box-shadow: none;
-}
-.frame .fclose:hover {
-  color: var(--red);
-  border-color: var(--red);
-  background: rgba(0, 0, 0, 0.95);
-  transform: none;
-}
-.frame .fresize {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 18px;
-  height: 18px;
-  cursor: nwse-resize;
-  background: linear-gradient(135deg, transparent 50%, rgba(254, 239, 51, 0.4) 50%);
-  border-bottom-right-radius: 14px;
-}
+.tpl-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.2rem; color: var(--yellow); }
+.tpl-desc { font-size: 0.7rem; opacity: 0.75; line-height: 1.4; }
+.templates-hint { padding: 0.7rem 1.2rem; border-top: 1px solid var(--line); font-size: 0.65rem; color: var(--muted); text-align: center; }
