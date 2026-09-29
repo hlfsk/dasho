@@ -10,9 +10,9 @@ import { Node } from '../node.js?v=26';
 import { isDrawable, intrinsicSize } from '../util.js';
 
 export class ParticlesNode extends Node {
-  static title = 'Частицы';
+  static title = 'Частицы (legacy)';
   static icon = '✦';
-  static category = 'effects';
+  static category = 'hidden';
 
   constructor(opts) {
     super(opts);
@@ -25,6 +25,9 @@ export class ParticlesNode extends Node {
       { name: 'attract_x',   type: 'number',  label: 'тянуть ↔ лево-право' },
       { name: 'attract_y',   type: 'number',  label: 'тянуть ↕ верх-низ' },
       { name: 'spread',      type: 'number',  label: 'разброс мод.' },
+      { name: 'size_mod',    type: 'number',  label: 'размер мод.' },
+      { name: 'alpha_mod',   type: 'number',  label: 'прозрачность мод.' },
+      { name: 'fric_mod',    type: 'number',  label: 'трение мод.' },
     ];
     this.outputs = [{ name: 'video', type: 'video', label: 'видео' }];
     this.paramDefs = [
@@ -55,17 +58,19 @@ export class ParticlesNode extends Node {
         ],
         group: 'ВНЕШНИЙ ВИД' },
       { kind: 'slider', name: 'size', label: 'размер',
-        min: 1, max: 30, step: 1, default: 6,
+        min: 1, max: 400, step: 1, default: 12,
         format: (v) => Math.round(v) + 'px',
         group: 'ВНЕШНИЙ ВИД' },
       // КОЛИЧЕСТВО
       { kind: 'slider', name: 'count', label: 'частиц за выпуск',
-        min: 1, max: 60, step: 1, default: 12,
+        min: 1, max: 300, step: 1, default: 15,
         format: (v) => Math.round(v) + '',
         group: 'КОЛИЧЕСТВО' },
       { kind: 'slider', name: 'lifetime', label: 'длительность',
-        min: 0.3, max: 5, step: 0.1, default: 1.8,
+        min: 0.1, max: 10, step: 0.1, default: 2.5,
         format: (v) => Number(v).toFixed(1) + 'с',
+        group: 'КОЛИЧЕСТВО' },
+      { kind: 'toggle', name: 'active', label: 'активен (вкл/выкл)', default: true,
         group: 'КОЛИЧЕСТВО' },
       // ДВИЖЕНИЕ
       { kind: 'slider', name: 'gravity', label: 'гравитация',
@@ -80,8 +85,12 @@ export class ParticlesNode extends Node {
         min: 0, max: 1, step: 0.05, default: 0,
         format: (v) => v < 0.01 ? 'нет' : Number(v).toFixed(2),
         group: 'ДВИЖЕНИЕ' },
+      { kind: 'slider', name: 'friction', label: 'трение (вязкость)',
+        min: 0, max: 0.5, step: 0.01, default: 0.02,
+        format: (v) => v < 0.01 ? 'вакуум' : Number(v * 100).toFixed(0) + '%',
+        group: 'ДВИЖЕНИЕ' },
       { kind: 'select', name: 'mirror', label: 'зеркало X',
-        default: 'on',
+        default: 'off',
         options: [
           { value: 'on',  label: 'да' },
           { value: 'off', label: 'нет' },
@@ -155,7 +164,7 @@ export class ParticlesNode extends Node {
     for (const t of trigs) if (t) this.emit(ex, ey, count, Math.max(0.2, spreadMod));
 
     // Continuous — каждый кадр
-    if (this.params.mode === 'continuous') {
+    if (this.params.mode === 'continuous' && this.params.active !== false) {
       this._continuousAccum += count / 6; // ~10x в секунду на 60fps при count=60
       while (this._continuousAccum >= 1) {
         this.emit(ex, ey, 1, Math.max(0.2, spreadMod));
@@ -171,6 +180,19 @@ export class ParticlesNode extends Node {
     const mirror = this.params.mirror === 'on';
     let attractX = (typeof ax === 'number') ? (mirror ? 1 - ax : ax) * W : null;
     let attractY = (typeof ay === 'number') ? ay * H : null;
+
+    const sizeModInput = ctx.getInputValues(this.id, 'size_mod').filter(n => typeof n === 'number')[0];
+    const sizeMod = sizeModInput != null ? 0.2 + sizeModInput * 2.5 : 1;
+    
+    const alphaModInput = ctx.getInputValues(this.id, 'alpha_mod').filter(n => typeof n === 'number')[0];
+    const alphaMod = alphaModInput != null ? alphaModInput : 1;
+    
+    const fricModInput = ctx.getInputValues(this.id, 'fric_mod').filter(n => typeof n === 'number')[0];
+    const fricMod = fricModInput != null ? 0.5 + fricModInput * 1.0 : 1; // 0.5x..1.5x
+
+    const baseSize = this.params.size ?? 12;
+    const baseAlpha = this.params.opacity ?? 1;
+    const friction = 1 - (this.params.friction ?? 0.02) * fricMod;
 
     // Симуляция
     const dt = 1 / 60;
@@ -188,6 +210,11 @@ export class ParticlesNode extends Node {
         p.vy += dy / d * f * dt;
       }
       p.vy += grav * dt;
+
+      // Friction
+      p.vx *= friction;
+      p.vy *= friction;
+
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       surviving.push(p);
@@ -204,11 +231,11 @@ export class ParticlesNode extends Node {
     this.ctx2d.globalCompositeOperation = this._shapeImg ? 'source-over' : 'lighter';
     const shape = this.params.shape || 'circle';
     for (const p of this.particles) {
-      const a = 1 - p.life / p.max;
-      this.ctx2d.globalAlpha = a;
+      const lifeAlpha = Math.max(0, 1 - p.life / p.max);
+      this.ctx2d.globalAlpha = baseAlpha * lifeAlpha * alphaMod;
       this.ctx2d.fillStyle = p.color;
       this.ctx2d.strokeStyle = p.color;
-      this.drawShape(shape, p.x, p.y, p.size);
+      this.drawShape(shape, p.x, p.y, p.size * sizeMod);
     }
     this.ctx2d.globalAlpha = 1;
     this.ctx2d.globalCompositeOperation = 'source-over';

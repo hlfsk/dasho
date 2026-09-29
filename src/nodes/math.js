@@ -29,7 +29,7 @@ export class MathNode extends Node {
           { value: 'min', label: 'меньше из двух' },
           { value: 'inv', label: '1 − A' },
         ] },
-      { kind: 'slider', name: 'b_default', label: 'B если не подключён',
+      { kind: 'slider', name: 'b', label: 'B (константа)',
         min: 0, max: 1, step: 0.02, default: 1,
         format: (v) => Number(v).toFixed(2) },
     ];
@@ -37,6 +37,7 @@ export class MathNode extends Node {
   }
 
   init() {
+    this.moveSocketsToParams();
     const ind = document.createElement('div');
     ind.style.cssText = 'display:flex;align-items:center;gap:0.4rem;margin-top:0.3rem;font-size:0.7rem;opacity:0.75';
     ind.innerHTML = `<span style="width:34px">=</span><div class="bar" style="flex:1"><div></div></div><span class="val" style="width:34px;text-align:right;font-variant-numeric:tabular-nums">0.00</span>`;
@@ -46,10 +47,8 @@ export class MathNode extends Node {
   }
 
   tick(ctx) {
-    const aIn = ctx.getInputValues(this.id, 'a').filter((n) => typeof n === 'number')[0];
-    const bIn = ctx.getInputValues(this.id, 'b').filter((n) => typeof n === 'number')[0];
-    const a = aIn ?? 0;
-    const b = bIn ?? this.params.b_default ?? 0;
+    const a = this.getParam(ctx, 'a', 0);
+    const b = this.getParam(ctx, 'b', 0);
     let v;
     switch (this.params.op) {
       case 'sub': v = a - b; break;

@@ -17,7 +17,7 @@ export class MixNode extends Node {
       { name: 'video_b', type: 'video', label: 'видео B' },
       { name: 'audio_a', type: 'audio', label: 'звук A' },
       { name: 'audio_b', type: 'audio', label: 'звук B' },
-      { name: 'mix_mod', type: 'number',  label: 'A↔B мод.' },
+      { name: 'mix',     type: 'number',  label: 'A↔B мод.' },
       { name: 'swap',    type: 'trigger', label: 'свап! A↔B' },
     ];
     this.outputs = [
@@ -25,7 +25,7 @@ export class MixNode extends Node {
       { name: 'audio', type: 'audio', label: 'звук' },
     ];
     this.paramDefs = [
-      { kind: 'slider', name: 'amount', label: 'A ↔ B',
+      { kind: 'slider', name: 'mix', label: 'A ↔ B',
         min: 0, max: 1, step: 0.02, default: 0.5,
         format: (v) => Math.round((1 - v) * 100) + '/' + Math.round(v * 100) },
       { kind: 'select', name: 'blend', label: 'смешение видео',
@@ -57,6 +57,10 @@ export class MixNode extends Node {
     this._connectedB = null;
   }
 
+  init() {
+    this.moveSocketsToParams();
+  }
+
   ensureAudio() {
     if (this._audioOut) return;
     const ctx = getAudioContext();
@@ -83,9 +87,7 @@ export class MixNode extends Node {
     const a = ctx.getInputValues(this.id, 'video_a').filter(isDrawable)[0];
     const b = ctx.getInputValues(this.id, 'video_b').filter(isDrawable)[0];
 
-    const mods = ctx.getInputValues(this.id, 'mix_mod').filter((n) => typeof n === 'number');
-    let amt = this.params.amount ?? 0.5;
-    if (mods.length) amt = Math.max(0, Math.min(1, amt + (mods[0] - 0.5) * 0.6));
+    let amt = this.getParam(ctx, 'mix', 0.5);
 
     // Триггер «свап» — переворачивает направление mix.
     // Не трогаем слайдер params.amount — пользователь его всё ещё видит как есть.

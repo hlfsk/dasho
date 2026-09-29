@@ -12,11 +12,11 @@
 // 1-5 = первая рука, 6-10 = вторая. X/Y берётся из первой руки.
 
 import { Node } from '../node.js?v=26';
-import { isDrawable, intrinsicSize } from '../util.js';
+import { isDrawable, intrinsicSize, copyMetadata } from '../util.js';
 import { t } from '../i18n.js';
 
-const MP_URL  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/vision_bundle.mjs';
-const MP_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm';
+const MP_URL  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+const MP_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
 
 let _handPromise = null;
 async function getHand() {
@@ -87,7 +87,7 @@ function tipsInside(handA, boxB) {
 export class HandDetailNode extends Node {
   static title = 'Руки (кисть и жесты)';
   static icon = '🤚';
-  static category = 'analysis';
+  static category = 'interaction';
   static keywords = 'mediapipe hands fingers gestures палец рука жест ладонь щипок pinch finger brush рисование';
 
   constructor(opts) {
@@ -258,6 +258,7 @@ export class HandDetailNode extends Node {
       this.canvas.height = vh;
     }
     this.ctx2d.drawImage(v, 0, 0, this.canvas.width, this.canvas.height);
+    copyMetadata(v, this.canvas);
     this.values.video = this.canvas;
 
     if (!this._detector) return;
@@ -390,6 +391,17 @@ export class HandDetailNode extends Node {
       this.values.lock = lockNow && !this._wasLock;
       this._wasLock = lockNow;
 
+      // ЭКСПОРТ ДАННЫХ
+      if (hands.length > 0) {
+        this.canvas.handData = {
+          landmarks: hands,
+          points: {
+            palmPoint: { x: this.values.x, y: this.values.palm_y }, // Упрощенно
+            indexPoint: { x: this.values.x, y: this.values.y }
+          }
+        };
+      }
+
       const handsLabel = hands.length === 2 ? t('mp.two-hands', '2 руки')
                         : hands.length === 1 ? t('mp.one-hand', '1 рука')
                         : t('mp.no-hands', 'нет рук');
@@ -450,4 +462,9 @@ export class HandDetailNode extends Node {
   }
 
   getOutput(name) { return this.values[name]; }
+
+  destroy() {
+    this._detector = null;
+    this.canvas = null; this.ctx2d = null;
+  }
 }

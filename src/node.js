@@ -69,6 +69,13 @@ export class Node {
   // ── DOM-сборка ──
   mount(parent) {
     const ctor = this.constructor;
+
+    // Глобальное внедрение аудио-входа: если у ноды есть параметры или входы контроля
+    const canBeModulated = this.inputs.some(i => i.type === 'number' || i.type === 'trigger') || this.paramDefs.length > 0;
+    if (canBeModulated && !this.inputs.find(i => i.name === 'audio')) {
+      this.inputs.push({ name: 'audio', type: 'audio', label: 'аудио-вход 🎵' });
+    }
+
     // Не <details> — свой элемент с двумя зонами: always-visible и collapsible.
     const el = document.createElement('div');
     el.className = 'node collapsed';   // по умолчанию параметры скрыты
@@ -110,6 +117,11 @@ export class Node {
       this.renderParam(params, p);
       if (p.group && params.lastElementChild) {
         params.lastElementChild.dataset.group = p.group;
+      }
+      // АВТО-ГЕНЕРАЦИЯ ВХОДОВ: если это слайдер/селект/тоггл и у него ещё нет входа — создаём!
+      const hasInput = this.inputs.some(i => i.name === p.name);
+      if (!hasInput && (p.kind === 'slider' || p.kind === 'select' || p.kind === 'toggle')) {
+        this.inputs.push({ name: p.name, type: 'number', label: p.label || p.name });
       }
     }
 
@@ -169,14 +181,6 @@ export class Node {
         row.appendChild(sock);
         row.appendChild(lbl);
         params.appendChild(row);
-      }
-    }
-
-    // Все сокет-строки без group объединяем в общую секцию КОННЕКТОРЫ
-    const ungroupedRows = [...params.querySelectorAll(':scope > .row:not([data-group])')];
-    if (ungroupedRows.length >= 2) {
-      for (const r of ungroupedRows) {
-        r.dataset.group = 'КОННЕКТОРЫ';
       }
     }
 
@@ -273,6 +277,7 @@ export class Node {
         this.params[def.name] = parseFloat(input.value);
         valEl.textContent = fmt(input.value);
       });
+      if (def.group) wrap.dataset.group = def.group;
       wrap.appendChild(head);
       wrap.appendChild(input);
       parent.appendChild(wrap);
@@ -282,9 +287,11 @@ export class Node {
       const head = document.createElement('div');
       head.className = 'param-head';
       head.innerHTML = `<span>${escape(tParam(def))}</span>`;
+      if (def.group) wrap.dataset.group = def.group;
       const sel = document.createElement('select');
       sel.className = 'param-select';
       sel.dataset.pname = def.name;
+      if (def.group) wrap.dataset.group = def.group;
       for (const opt of def.options) {
         const o = document.createElement('option');
         o.value = opt.value;
@@ -302,6 +309,7 @@ export class Node {
     } else if (def.kind === 'color') {
       const wrap = document.createElement('div');
       wrap.className = 'param';
+      if (def.group) wrap.dataset.group = def.group;
       const row = document.createElement('div');
       row.style.cssText = 'display:flex;align-items:center;gap:0.4rem';
       const lbl = document.createElement('span');
@@ -321,6 +329,7 @@ export class Node {
     } else if (def.kind === 'textarea') {
       const wrap = document.createElement('div');
       wrap.className = 'param';
+      if (def.group) wrap.dataset.group = def.group;
       const head = document.createElement('div');
       head.className = 'param-head';
       head.innerHTML = `<span>${escape(tParam(def))}</span>`;
@@ -335,6 +344,25 @@ export class Node {
       ta.addEventListener('input', () => { this.params[def.name] = ta.value; });
       wrap.appendChild(head);
       wrap.appendChild(ta);
+      parent.appendChild(wrap);
+    } else if (def.kind === 'toggle') {
+      const wrap = document.createElement('div');
+      wrap.className = 'param param-toggle';
+      if (def.group) wrap.dataset.group = def.group;
+      const row = document.createElement('label');
+      row.style.cssText = 'display:flex;align-items:center;gap:0.4rem;cursor:pointer';
+      const inp = document.createElement('input');
+      inp.type = 'checkbox';
+      inp.dataset.pname = def.name;
+      inp.checked = def.default ?? false;
+      this.params[def.name] = inp.checked;
+      inp.addEventListener('change', () => { this.params[def.name] = inp.checked; });
+      const lbl = document.createElement('span');
+      lbl.className = 'param-head';
+      lbl.style.flex = '1';
+      lbl.textContent = tParam(def);
+      row.appendChild(lbl); row.appendChild(inp);
+      wrap.appendChild(row);
       parent.appendChild(wrap);
     }
   }
@@ -351,7 +379,15 @@ export class Node {
     for (const [name, value] of Object.entries(savedParams)) {
       const inputs = root.querySelectorAll(`[data-pname="${name}"]`);
       for (const el of inputs) {
-        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
+        if (el.tagName === 'INPUT') {
+          if (el.type === 'checkbox') {
+            el.checked = !!value;
+          } else {
+            el.value = value;
+          }
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        } else if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
           el.value = value;
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -487,17 +523,16 @@ export class Node {
   // По умолчанию группа открыта, кроме тех что в this.collapsedByDefault.
   _applyGrouping(body) {
     const children = Array.from(body.children);
-    const groups = []; // массив {name, els:[]}
-    let cur = null;
+    const groupsMap = new Map(); // name -> {name, els:[]}
     for (const el of children) {
       const g = el.dataset.group;
-      if (!g) { cur = null; continue; }
-      if (!cur || cur.name !== g) {
-        cur = { name: g, els: [] };
-        groups.push(cur);
+      if (!g) continue;
+      if (!groupsMap.has(g)) {
+        groupsMap.set(g, { name: g, els: [] });
       }
-      cur.els.push(el);
+      groupsMap.get(g).els.push(el);
     }
+    const groups = Array.from(groupsMap.values());
     // По умолчанию ВСЕ группы параметров свёрнуты — нода компактная.
     // Исключения: ноды могут переопределить через this.expandedByDefault =
     // new Set(['ВНЕШНИЙ ВИД']) если хотят что-то развёрнутым на старте.
@@ -559,6 +594,42 @@ export class Node {
       if (out instanceof HTMLVideoElement && out.readyState < 2) return;
       this._previewCtx.drawImage(out, 0, 0, c.width, c.height);
     } catch {}
+  }
+
+  // ── UI-хелпер: перемещает сокеты-входы прямо в строки соответствующих параметров
+  /**
+   * Возвращает текущее значение параметра с учетом модуляции (провода).
+   * Если к сокету с таким же именем подключен провод, берем значение из него.
+   * Иначе — значение из слайдера/контрола (this.params).
+   */
+  getParam(ctx, name, defValue = null) {
+    const vals = ctx.getInputValues(this.id, name);
+    // Ищем первое числовое значение (игнорируем undefined/null)
+    const mod = vals.filter(v => typeof v === 'number' || typeof v === 'boolean' || typeof v === 'string')[0];
+    if (mod !== undefined) return mod;
+    return this.params[name] ?? defValue;
+  }
+
+  moveSocketsToParams() {
+    if (!this.bodyEl) return;
+    const body = this.bodyEl;
+    const inRows = [...body.querySelectorAll('.row-in')];
+    for (const row of inRows) {
+      const sock = row.querySelector('.socket');
+      if (!sock) continue;
+      const name = sock.dataset.name;
+      const pInput = body.querySelector(`[data-pname="${name}"]`);
+      if (pInput) {
+        const paramRow = pInput.closest('.param');
+        if (paramRow) {
+          paramRow.prepend(sock);
+          row.remove();
+        }
+      }
+    }
+    for (const h of body.querySelectorAll('.group-header')) {
+      if (h.textContent.includes('КОННЕКТОРЫ')) h.style.display = 'none';
+    }
   }
 
   remove() {

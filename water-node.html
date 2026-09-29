@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Water Node</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; overflow: hidden; width: 100vw; height: 100vh; }
+  canvas { display: block; width: 100%; height: 100%; }
+
+  #controls {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px 16px;
+    width: 210px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    z-index: 100;
+    user-select: none;
+  }
+  #controls h3 {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 12px;
+  }
+  .ctrl-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .ctrl-row label { flex: 0 0 auto; min-width: 78px; color: rgba(255,255,255,0.6); }
+  .ctrl-row input[type=range] {
+    flex: 1;
+    height: 3px;
+    accent-color: #4fc3f7;
+    cursor: pointer;
+  }
+  .ctrl-row .val {
+    flex: 0 0 28px;
+    text-align: right;
+    color: #4fc3f7;
+    font-variant-numeric: tabular-nums;
+  }
+  .ctrl-swatch {
+    width: 22px; height: 22px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.2);
+    cursor: pointer;
+    flex: 0 0 22px;
+  }
+  .ctrl-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 8px 0; }
+  #status {
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 5px 16px;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    pointer-events: none;
+    z-index: 100;
+    letter-spacing: 0.04em;
+  }
+  #status span { color: #4fc3f7; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="controls">
+  <h3>🌊 Water</h3>
+  <div class="ctrl-row">
+    <label>Color</label>
+    <input type="color" id="waterColor" value="#0a3d6b" class="ctrl-swatch" title="Water color">
+    <input type="color" id="foamColor" value="#aaddff" class="ctrl-swatch" title="Foam color">
+  </div>
+  <hr class="ctrl-divider">
+  <div class="ctrl-row">
+    <label>Wave height</label>
+    <input type="range" id="waveHeight" min="0.001" max="0.15" step="0.001" value="0.015">
+    <span class="val" id="waveHeightVal">0.02</span>
+  </div>
+  <div class="ctrl-row">
+    <label>Wave speed</label>
+    <input type="range" id="waveSpeed" min="0.1" max="3.0" step="0.05" value="0.8">
+    <span class="val" id="waveSpeedVal">0.8</span>
+  </div>
+  <div class="ctrl-row">
+    <label>Frequency</label>
+    <input type="range" id="waveFreq" min="1" max="20" step="0.5" value="5">
+    <span class="val" id="waveFreqVal">5.0</span>
+  </div>
+  <div class="ctrl-row">
+    <label>Turbulence</label>
+    <input type="range" id="turbulence" min="0" max="1" step="0.01" value="0.0">
+    <span class="val" id="turbulenceVal">0.0</span>
+  </div>
+  <hr class="ctrl-divider">
+  <div class="ctrl-row">
+    <label>Reflection</label>
+    <input type="range" id="reflection" min="0" max="1" step="0.01" value="0.4">
+    <span class="val" id="reflectionVal">0.4</span>
+  </div>
+  <div class="ctrl-row">
+    <label>Depth fog</label>
+    <input type="range" id="fogDepth" min="0" max="1" step="0.01" value="0.5">
+    <span class="val" id="fogDepthVal">0.5</span>
+  </div>
+</div>
+
+<div id="status">Move mouse / use hands | <span id="handStatus">mouse mode</span></div>
+
+<script>
+// ─── Water Node for DÄSHO ────────────────────
+// Reads window.handData (MediaPipe Hands format)
+// Mouse fallback for solo testing
+
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+if(!gl){ document.body.innerHTML='<p style="color:red;padding:20px">WebGL not supported</p>'; }
+
+const P = {
+  waterColor:  [0.04, 0.18, 0.35],
+  foamColor:   [0.67, 0.87, 1.0],
+  waveHeight:  0.015,
+  waveSpeed:   0.8,
+  waveFreq:    5.0,
+  turbulence:  0.0,
+  reflection:  0.4,
+  fogDepth:    0.5,
+  handEnergy:  0.0,
+  handSpread:  0.0,
+  handVelX:    0.0,
+  handVelY:    0.0,
+  handCenterX: 0.5,
+  handCenterY: 0.5,
+};
+
+const VERT = `#version 300 es
+precision highp float;
+in vec2 a_pos;
+out vec2 v_uv;
+void main(){
+  v_uv = a_pos * 0.5 + 0.5;
+  gl_Position = vec4(a_pos, 0.0, 1.0);
+}`;
+
+const FRAG = `#version 300 es
+precision highp float;
+uniform float u_time;
+uniform vec2  u_res;
+uniform vec3  u_waterColor;
+uniform vec3  u_foamColor;
+uniform float u_waveHeight;
+uniform float u_waveSpeed;
+uniform float u_waveFreq;
+uniform float u_turbulence;
+uniform float u_reflection;
+uniform float u_fogDepth;
+uniform float u_energy;
+uniform float u_spread;
+uniform float u_velX;
+uniform float u_velY;
+uniform vec2  u_handCenter;
+in vec2 v_uv;
+out vec4 fragColor;
+
+vec2 hash2(vec2 p){
+  p = vec2(dot(p,vec2(127.1,311.7)), dot(p,vec2(269.5,183.3)));
+  return -1.0 + 2.0*fract(sin(p)*43758.5453);
+}
+float noise(vec2 p){
+  vec2 i=floor(p); vec2 f=fract(p);
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(mix(dot(hash2(i+vec2(0,0)),f-vec2(0,0)),dot(hash2(i+vec2(1,0)),f-vec2(1,0)),u.x),
+             mix(dot(hash2(i+vec2(0,1)),f-vec2(0,1)),dot(hash2(i+vec2(1,1)),f-vec2(1,1)),u.x),u.y);
+}
+float gerstner(vec2 pos, vec2 dir, float amp, float freq, float phase){
+  return amp * sin(dot(normalize(dir), pos) * freq + phase);
+}
+vec2 perspUV(vec2 uv){
+  float pers = 1.0 - uv.y * 0.35;
+  return vec2((uv.x - 0.5) * pers + 0.5, uv.y);
+}
+
+void main(){
+  vec2 uv = v_uv;
+  float aspect = u_res.x / u_res.y;
+  vec2 p = perspUV(uv);
+  vec2 world = vec2(p.x * aspect, p.y);
+  float t = u_time * u_waveSpeed;
+  float baseAmp = u_waveHeight + u_energy * 0.12;
+  float freq    = u_waveFreq   + u_spread * 8.0;
+
+  float w = 0.0;
+  w += gerstner(world, vec2(1.0, 0.4),  baseAmp,        freq,       t*1.0);
+  w += gerstner(world, vec2(-0.7,1.0),  baseAmp*0.6,    freq*1.5,   t*1.3+1.2);
+  w += gerstner(world, vec2(0.5,-0.8),  baseAmp*0.4,    freq*2.3,   t*0.8+2.4);
+  w += gerstner(world, vec2(-1.0,-0.3), baseAmp*0.25,   freq*3.1,   t*1.6+3.7);
+
+  float turb = u_turbulence + length(vec2(u_velX,u_velY))*0.5;
+  w += noise(world * freq * 0.8 + vec2(t*0.4)) * turb * baseAmp * 2.0;
+
+  vec2 handPos = vec2(u_handCenter.x * aspect, u_handCenter.y);
+  float dist   = length(world - handPos);
+  float ripple = sin(dist * 18.0 - t * 3.5) * exp(-dist * 3.0) * u_energy * 0.05;
+  w += ripple;
+
+  float eps = 0.005;
+  float wx = gerstner(world+vec2(eps,0), vec2(1,0.4),  baseAmp, freq, t);
+  float wz = gerstner(world+vec2(0,eps), vec2(-0.7,1), baseAmp*0.6, freq*1.5, t*1.3+1.2);
+  vec3 normal = normalize(vec3(-(wx-w)/eps, 1.0, -(wz-w)/eps));
+
+  vec3 sunDir = normalize(vec3(0.4, 0.8, 0.5));
+  float diff  = max(dot(normal, sunDir), 0.0);
+  float spec  = pow(max(dot(reflect(-sunDir, normal), vec3(0,0,1)), 0.0), 64.0) * u_reflection;
+
+  float skyRefl = smoothstep(0.4, 0.9, uv.y) * u_reflection;
+  vec3 skyColor = mix(vec3(0.08,0.15,0.3), vec3(0.5,0.7,1.0), uv.y);
+
+  float foam  = smoothstep(baseAmp*0.6, baseAmp*1.2, w) * (0.3 + u_energy*0.5);
+  float depth = mix(0.0, u_fogDepth, 1.0 - uv.y);
+
+  vec3 col = u_waterColor;
+  col *= 0.6 + diff * 0.8;
+  col  = mix(col, skyColor, skyRefl);
+  col += u_foamColor * foam;
+  col += vec3(1.0) * spec;
+  col  = mix(col, u_waterColor * 0.2, depth);
+  float vig = 1.0 - length((uv - 0.5) * 1.4) * 0.3;
+  col *= vig;
+  fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+}`;
+
+function compileShader(type, src){
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(s)); return null; }
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, compileShader(gl.VERTEX_SHADER, VERT));
+gl.attachShader(prog, compileShader(gl.FRAGMENT_SHADER, FRAG));
+gl.linkProgram(prog);
+gl.useProgram(prog);
+
+const vao = gl.createVertexArray ? gl.createVertexArray() : null;
+if(vao) gl.bindVertexArray(vao);
+const buf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'a_pos');
+gl.enableVertexAttribArray(loc);
+gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+const U = {};
+['u_time','u_res','u_waterColor','u_foamColor','u_waveHeight','u_waveSpeed',
+ 'u_waveFreq','u_turbulence','u_reflection','u_fogDepth',
+ 'u_energy','u_spread','u_velX','u_velY','u_handCenter'
+].forEach(n => U[n] = gl.getUniformLocation(prog, n));
+
+function hexToRgb(hex){
+  return [parseInt(hex.slice(1,3),16)/255, parseInt(hex.slice(3,5),16)/255, parseInt(hex.slice(5,7),16)/255];
+}
+
+function resize(){ canvas.width=window.innerWidth*devicePixelRatio; canvas.height=window.innerHeight*devicePixelRatio; gl.viewport(0,0,canvas.width,canvas.height); }
+window.addEventListener('resize', resize); resize();
+
+// Hand state
+const hand = { energy:0, spread:0, velX:0, velY:0, cx:0.5, cy:0.5, prevCx:0.5, prevCy:0.5 };
+const statusEl = document.getElementById('handStatus');
+
+function updateFromHandData(){
+  const data = window.handData;
+  if(!data || !data.landmarks || data.landmarks.length===0){
+    hand.energy *= 0.95; hand.spread *= 0.95; hand.velX *= 0.9; hand.velY *= 0.9;
+    P.handEnergy=hand.energy; P.handSpread=hand.spread;
+    return false;
+  }
+  const lms = data.landmarks[0];
+  const wrist=lms[0], indexTip=lms[8], pinkyTip=lms[20];
+  const energy = Math.min(1, Math.max(0, (1.0 - wrist.y) * 1.4));
+  const spread = Math.min(1, Math.hypot(indexTip.x-pinkyTip.x, indexTip.y-pinkyTip.y)*3.0);
+  const cx=wrist.x, cy=1.0-wrist.y;
+  hand.velX=(cx-hand.prevCx)*10; hand.velY=(cy-hand.prevCy)*10;
+  hand.prevCx=cx; hand.prevCy=cy;
+  hand.energy=hand.energy*0.7+energy*0.3;
+  hand.spread=hand.spread*0.7+spread*0.3;
+  hand.cx=cx; hand.cy=cy;
+  P.handEnergy=hand.energy; P.handSpread=hand.spread;
+  P.handVelX=hand.velX; P.handVelY=hand.velY;
+  P.handCenterX=hand.cx; P.handCenterY=hand.cy;
+  const n=data.landmarks.length;
+  statusEl.textContent=n+' hand'+(n>1?'s':'')+' | energy '+hand.energy.toFixed(2);
+  return true;
+}
+
+// Mouse fallback
+canvas.addEventListener('mousemove', e=>{
+  if(window.handData) return;
+  const y = 1.0 - e.clientY / window.innerHeight;
+  hand.energy = y * 1.2;
+  hand.spread = e.clientX / window.innerWidth;
+  hand.cx = e.clientX / window.innerWidth;
+  hand.cy = y;
+  P.handEnergy=hand.energy; P.handSpread=hand.spread;
+  P.handCenterX=hand.cx; P.handCenterY=hand.cy;
+  statusEl.textContent='mouse | energy '+hand.energy.toFixed(2);
+});
+
+function bindRange(id, key){
+  const el=document.getElementById(id);
+  const val=document.getElementById(id+'Val');
+  const step=parseFloat(el.step);
+  const dec = step<0.1?2:step<1?1:0;
+  el.addEventListener('input', ()=>{ P[key]=parseFloat(el.value); if(val) val.textContent=parseFloat(el.value).toFixed(dec); });
+  if(val) val.textContent=parseFloat(el.value).toFixed(dec);
+}
+bindRange('waveHeight','waveHeight'); bindRange('waveSpeed','waveSpeed');
+bindRange('waveFreq','waveFreq'); bindRange('turbulence','turbulence');
+bindRange('reflection','reflection'); bindRange('fogDepth','fogDepth');
+document.getElementById('waterColor').addEventListener('input',e=>{ P.waterColor=hexToRgb(e.target.value); });
+document.getElementById('foamColor').addEventListener('input',e=>{ P.foamColor=hexToRgb(e.target.value); });
+
+const t0 = performance.now();
+function render(){
+  requestAnimationFrame(render);
+  if(!updateFromHandData() && !window.handData){/* mouse already handled */}
+  const t=(performance.now()-t0)*0.001;
+  gl.useProgram(prog);
+  if(vao) gl.bindVertexArray(vao);
+  gl.uniform1f(U.u_time, t);
+  gl.uniform2f(U.u_res, canvas.width, canvas.height);
+  gl.uniform3fv(U.u_waterColor, P.waterColor);
+  gl.uniform3fv(U.u_foamColor, P.foamColor);
+  gl.uniform1f(U.u_waveHeight, P.waveHeight);
+  gl.uniform1f(U.u_waveSpeed, P.waveSpeed);
+  gl.uniform1f(U.u_waveFreq, P.waveFreq);
+  gl.uniform1f(U.u_turbulence, P.turbulence);
+  gl.uniform1f(U.u_reflection, P.reflection);
+  gl.uniform1f(U.u_fogDepth, P.fogDepth);
+  gl.uniform1f(U.u_energy, P.handEnergy);
+  gl.uniform1f(U.u_spread, P.handSpread);
+  gl.uniform1f(U.u_velX, P.handVelX);
+  gl.uniform1f(U.u_velY, P.handVelY);
+  gl.uniform2f(U.u_handCenter, P.handCenterX, P.handCenterY);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+render();
+</script>
+</body>
+</html>

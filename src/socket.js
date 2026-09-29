@@ -6,6 +6,7 @@ export const TYPES = {
   audio:   { color: '#00e5d5', label: 'звук'    },  // бирюзовый
   number:  { color: '#c4a8ff', label: 'число'   },  // лавандовый — отличается от video!
   trigger: { color: '#ff4d2e', label: 'триггер' },  // оранж
+  color:   { color: '#a855f7', label: 'цвет'    },  // сиреневый
 };
 
 // Совместимость соединений: from-out type → to-in type.
@@ -13,6 +14,10 @@ export const TYPES = {
 export function canConnect(outType, inType) {
   if (!TYPES[outType] || !TYPES[inType]) return false;
   if (outType === inType) return true;
+  // Цвет: принимаем числа (радуга) и триггеры (рандом)
+  if (inType === 'color') {
+    return outType === 'number' || outType === 'trigger';
+  }
   // Триггер можно подать на число-вход — будет 0/1 в момент срабатывания
   if (outType === 'trigger' && inType === 'number') return true;
   // Число можно подать на триггер-вход — фиксируется по порогу 0.5

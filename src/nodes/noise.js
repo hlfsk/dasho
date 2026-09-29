@@ -29,9 +29,6 @@ export class NoiseNode extends Node {
   constructor(opts) {
     super(opts);
     this.inputs = [
-      { name: 'scale_mod',   type: 'number',  label: 'размер мод. ←' },
-      { name: 'speed_mod',   type: 'number',  label: 'скорость мод. ←' },
-      { name: 'density_mod', type: 'number',  label: 'плотность мод. ←' },
       { name: 'trigger',     type: 'trigger', label: 'новый кадр!' },
     ];
     this.outputs = [{ name: 'video', type: 'video', label: 'видео' }];
@@ -63,6 +60,10 @@ export class NoiseNode extends Node {
     this._frameCounter = 0;
   }
 
+  init() {
+    this.moveSocketsToParams();
+  }
+
   tick(ctx) {
     // Триггер «новый кадр сейчас»
     const triggers = ctx?.getInputValues(this.id, 'trigger') || [];
@@ -70,29 +71,12 @@ export class NoiseNode extends Node {
 
     this._frameCounter++;
 
-    // Скорость: базовая + модуляция
-    const speedBase = this.params.speed ?? 0.5;
-    const speedMod = ctx?.getInputValues(this.id, 'speed_mod')
-      .filter((n) => typeof n === 'number')[0];
-    const speed = speedMod != null ? Math.max(0, Math.min(1, speedMod)) : speedBase;
+    const speed = this.getParam(ctx, 'speed', 0.5);
     const skip = Math.max(1, Math.round(8 * (1 - speed)));
     if (!triggered && this._frameCounter % skip !== 0) return;
 
-    // Размер пикселя: базовый × (0.5 + 1.5 * mod) если mod подключён
-    const scaleBase = Math.max(1, this.params.scale ?? 4);
-    const scaleMod = ctx?.getInputValues(this.id, 'scale_mod')
-      .filter((n) => typeof n === 'number')[0];
-    const scale = scaleMod != null
-      ? Math.max(1, Math.round(scaleBase * (0.5 + 1.5 * Math.max(0, Math.min(1, scaleMod)))))
-      : scaleBase;
-
-    // Плотность: базовая или модуляция
-    const densityBase = this.params.density ?? 1;
-    const densityMod = ctx?.getInputValues(this.id, 'density_mod')
-      .filter((n) => typeof n === 'number')[0];
-    const density = densityMod != null
-      ? Math.max(0, Math.min(1, densityMod))
-      : densityBase;
+    const scale = Math.max(1, Math.round(this.getParam(ctx, 'scale', 4)));
+    const density = this.getParam(ctx, 'density', 1.0);
 
     const W = Math.max(8, Math.floor(this.canvas.width / scale));
     const H = Math.max(8, Math.floor(this.canvas.height / scale));

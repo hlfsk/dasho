@@ -70,6 +70,7 @@ export class BoosterNode extends Node {
     this._valIn  = wrap.querySelector('.val-in');
     this._valOut = wrap.querySelector('.val-out');
     this.bodyEl.appendChild(wrap);
+    this.moveSocketsToParams();
   }
 
   tick(ctx) {
@@ -93,24 +94,23 @@ export class BoosterNode extends Node {
     }
 
     // 1. Gate
-    const gate = this.params.gate ?? 0;
+    const gate = this.getParam(ctx, 'gate', 0);
     if (x < gate) x = 0;
     else if (gate > 0) {
-      // плавный переход — растягиваем (gate..1) → (0..1)
       x = (x - gate) / (1 - gate);
     }
 
     // 2. Gain + clamp
-    const gain = this.params.gain ?? 2;
+    const gain = this.getParam(ctx, 'gain', 2);
     x = Math.min(1, x * gain);
 
     // 3. Curve
-    const curve = this.params.curve;
+    const curve = this.getParam(ctx, 'curve', 'linear');
     if (curve === 'soft') x = Math.sqrt(x);
     else if (curve === 'hard') x = x * x;
 
-    // 4. Release — пиковое значение тянется вниз
-    const rel = this.params.release ?? 0.7;
+    // 4. Release
+    const rel = this.getParam(ctx, 'release', 0.7);
     if (x > this._held) this._held = x;
     else this._held = this._held * rel + x * (1 - rel);
 

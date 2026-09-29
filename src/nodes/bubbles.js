@@ -3,7 +3,7 @@
 // Два режима: «слова» (текстовые баблы) и «дым» (мягкие полупрозрачные шары).
 
 import { Node } from '../node.js?v=26';
-import { isDrawable, intrinsicSize } from '../util.js';
+import { isDrawable, intrinsicSize, copyMetadata } from '../util.js';
 
 const FUN_TEXTS_DEFAULT = 'ВАУ, БУМ!, ПЫЩ, УРА, СМОТРИ!, СЛУШАЙ, АААА, ОЙ, ХОППА';
 
@@ -44,7 +44,7 @@ export class BubblesNode extends Node {
         ],
         group: 'ВНЕШНИЙ ВИД' },
       { kind: 'slider', name: 'size', label: 'размер',
-        min: 20, max: 250, step: 5, default: 80,
+        min: 1, max: 800, step: 5, default: 80,
         format: (v) => Math.round(v) + 'px',
         group: 'ВНЕШНИЙ ВИД' },
       { kind: 'slider', name: 'opacity', label: 'прозрачность',
@@ -72,6 +72,12 @@ export class BubblesNode extends Node {
       { kind: 'slider', name: 'gravity', label: 'гравитация',
         min: -1, max: 1, step: 0.05, default: -0.4,
         format: (v) => Number(v).toFixed(2),
+        group: 'ДВИЖЕНИЕ' },
+      { kind: 'slider', name: 'friction', label: 'трение (вязкость)',
+        min: 0, max: 0.5, step: 0.01, default: 0.01,
+        format: (v) => v < 0.01 ? 'вакуум' : Number(v * 100).toFixed(0) + '%',
+        group: 'ДВИЖЕНИЕ' },
+      { kind: 'toggle', name: 'active', label: 'активен (вкл/выкл)', default: true,
         group: 'ДВИЖЕНИЕ' },
     ];
     this.collapsedByDefault = new Set(['СЛОВА', 'ДВИЖЕНИЕ']);
@@ -136,7 +142,7 @@ export class BubblesNode extends Node {
       size: this.params.size ?? 80,
       charOffsets: null,
     });
-    if (this.bubbles.length > 60) this.bubbles.shift();
+    if (this.bubbles.length > 200) this.bubbles.shift();
   }
 
   pickWord() {
@@ -210,7 +216,9 @@ export class BubblesNode extends Node {
     const trigs = ctx.getInputValues(this.id, 'trigger');
     const sizeMods = ctx.getInputValues(this.id, 'size_mod').filter((n) => typeof n === 'number');
     const sizeMod = sizeMods[0] ?? 0;
-    for (const t of trigs) if (t) this.spawn(sizeMod, sx, sy);
+    if (this.params.active !== false) {
+      for (const t of trigs) if (t) this.spawn(sizeMod, sx, sy);
+    }
 
     // Скорость влияет на скорость анимации
     const speedMods = ctx.getInputValues(this.id, 'speed_mod').filter((n) => typeof n === 'number');
@@ -238,6 +246,11 @@ export class BubblesNode extends Node {
       b.y += b.vy * dt * speedMul;
       b.vy += grav * dt;
 
+      // Friction
+      const f = 1 - (this.params.friction ?? 0.01);
+      b.vx *= f;
+      b.vy *= f;
+
       // Alpha curve: full first 30%, fade out rest (как в lups)
       const progress = b.life / b.max;
       const fadeStart = 0.3;
@@ -258,6 +271,7 @@ export class BubblesNode extends Node {
       }
     }
     this.ctx2d.globalAlpha = 1;
+    copyMetadata(v, this.canvas);
   }
 
   drawWord(b) {

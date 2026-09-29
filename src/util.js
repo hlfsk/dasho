@@ -17,3 +17,11 @@ export function intrinsicSize(v) {
   if (v instanceof HTMLVideoElement) return { w: v.videoWidth || 1, h: v.videoHeight || 1 };
   return { w: v.width || 1, h: v.height || 1 };
 }
+
+// Пробрасывает метаданные ИИ (лицо, руки, тело) с одного канваса на другой
+export function copyMetadata(from, to) {
+  if (!from || !to) return;
+  to.faceData = from.faceData || null;
+  to.handData = from.handData || null;
+  to.poseData = from.poseData || null;
+}

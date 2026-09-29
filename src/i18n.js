@@ -17,6 +17,7 @@ const DICT = {
     // Категории палитры
     'cat.sources':   'Источники',
     'cat.analysis':  'Анализ',
+    'cat.interaction': 'Взаимодействие',
     'cat.effects':   'Эффекты',
     'cat.routing':   'Маршрут',
     'cat.output':    'Выход',
@@ -41,10 +42,13 @@ const DICT = {
     'share.copied':         'ссылка скопирована',
     'share.no-server':      'сервер недоступен — делаю URL-ссылку',
     'share.too-big':        '⚠ сцена слишком большая для URL — настрой shareEndpoint или экспортни как файл',
+    'confirm.clear-all':    'Очистить весь холст? Сцены 1–9 останутся.',
+    'toast.canvas-cleared': 'холст очищен (сцены 1-9 сохранены)',
   },
   en: {
     'cat.sources':   'Sources',
     'cat.analysis':  'Analysis',
+    'cat.interaction': 'Interaction',
     'cat.effects':   'Effects',
     'cat.routing':   'Routing',
     'cat.output':    'Output',
@@ -65,6 +69,8 @@ const DICT = {
     'share.copied':         'link copied',
     'share.no-server':      'server unavailable — making a URL link',
     'share.too-big':        '⚠ scene too large for URL — configure shareEndpoint or export as a file',
+    'confirm.clear-all':    'Clear the entire canvas? Scenes 1–9 will be kept.',
+    'toast.canvas-cleared': 'canvas cleared (scenes 1-9 kept)',
 
     // ── Названия нод (все 50+) ─────────────────────────────────
     'node.Camera.title':          'Camera',

@@ -11,8 +11,8 @@
 import { Node } from '../node.js?v=26';
 import { isDrawable, intrinsicSize } from '../util.js';
 
-const MP_URL  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/vision_bundle.mjs';
-const MP_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm';
+const MP_URL  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+const MP_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
 
 let _detectorPromise = null;
 async function getDetector() {
@@ -102,7 +102,7 @@ function countFingersDetailed(landmarks) {
 export class MediaPipeBodyNode extends Node {
   static title = 'MediaPipe';
   static icon = '🤚';
-  static category = 'analysis';
+  static category = 'interaction';
 
   constructor(opts) {
     super(opts);
@@ -438,5 +438,13 @@ export class MediaPipeBodyNode extends Node {
 
   getOutput(name) {
     return this.values[name];
+  }
+
+  destroy() {
+    // Не вызываем .close() на синглтоне, чтобы не ломать другие ноды.
+    // Просто зануляем ссылки на тяжелые объекты для сборщика мусора.
+    this._detector = null;
+    this.canvas = null; this.ctx2d = null;
+    if (this.aiCanvas) this.aiCanvas = null;
   }
 }

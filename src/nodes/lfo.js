@@ -12,7 +12,7 @@ export class LfoNode extends Node {
   constructor(opts) {
     super(opts);
     this.inputs  = [
-      { name: 'speed_mod', type: 'number', label: 'скорость от сигнала' },
+      { name: 'speed', type: 'number', label: 'скорость мод.' },
     ];
     this.outputs = [
       { name: 'value', type: 'number', label: 'значение' },
@@ -27,7 +27,7 @@ export class LfoNode extends Node {
           { value: 'square',   label: '⊓⊓ квадрат' },
           { value: 'random',   label: '🎲 случайно' },
         ] },
-      { kind: 'slider', name: 'rate', label: 'скорость (Гц)',
+      { kind: 'slider', name: 'speed', label: 'скорость (Гц)',
         min: 0.05, max: 5, step: 0.05, default: 0.5,
         format: (v) => Number(v).toFixed(2) + ' Гц' },
       { kind: 'slider', name: 'min', label: 'мин',
@@ -44,6 +44,7 @@ export class LfoNode extends Node {
   }
 
   init() {
+    this.moveSocketsToParams();
     // Маленький индикатор текущего значения
     const ind = document.createElement('div');
     ind.style.cssText = 'display:flex;align-items:center;gap:0.4rem;margin-top:0.3rem;font-size:0.7rem;opacity:0.75';
@@ -54,8 +55,7 @@ export class LfoNode extends Node {
   }
 
   tick(ctx) {
-    const speedMod = ctx.getInputValues(this.id, 'speed_mod').filter((n) => typeof n === 'number')[0];
-    const rate = (this.params.rate ?? 0.5) * (1 + (speedMod ?? 0));
+    const rate = this.getParam(ctx, 'speed', 0.5);
     this._t += rate / 60; // считаем условно при 60 fps
 
     let v01;
@@ -78,8 +78,8 @@ export class LfoNode extends Node {
       default:         v01 = (Math.sin(phase * Math.PI * 2) + 1) / 2; break;
     }
 
-    const min = this.params.min ?? 0;
-    const max = this.params.max ?? 1;
+    const min = this.getParam(ctx, 'min', 0);
+    const max = this.getParam(ctx, 'max', 1);
     this.value = min + v01 * (max - min);
 
     if (this._barEl) {

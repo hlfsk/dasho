@@ -19,7 +19,7 @@ export class SvgSourceNode extends Node {
     this.outputs = [{ name: 'video', type: 'video', label: 'видео' }];
     this.paramDefs = [
       { kind: 'slider', name: 'scale', label: 'размер',
-        min: 0.1, max: 2, step: 0.05, default: 0.7,
+        min: 0.01, max: 10, step: 0.05, default: 0.7,
         format: (v) => Math.round(v * 100) + '%' },
       { kind: 'slider', name: 'opacity', label: 'прозрачность',
         min: 0, max: 1, step: 0.05, default: 1,
@@ -42,8 +42,8 @@ export class SvgSourceNode extends Node {
     ];
 
     this.canvas = document.createElement('canvas');
-    this.canvas.width = 800;
-    this.canvas.height = 800;
+    this.canvas.width = 1280;
+    this.canvas.height = 720;
     this.ctx2d = this.canvas.getContext('2d');
     this._svgBlob = null;
     this._image = null;

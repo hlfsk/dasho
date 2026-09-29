@@ -7,12 +7,13 @@ import { t, tNode } from './i18n.js';
 const CATEGORY_LABELS = {
   sources:  t('cat.sources'),
   analysis: t('cat.analysis'),
+  interaction: t('cat.interaction'),
   effects:  t('cat.effects'),
   routing:  t('cat.routing'),
   output:   t('cat.output'),
 };
 
-const CATEGORY_ORDER = ['sources', 'analysis', 'effects', 'routing', 'output'];
+const CATEGORY_ORDER = ['sources', 'analysis', 'interaction', 'effects', 'routing', 'output'];
 
 let paletteEl = null;
 let paletteBtn = null;

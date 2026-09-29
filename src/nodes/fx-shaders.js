@@ -3,7 +3,7 @@
 // Каждая берёт video → применяет fragment shader → отдаёт video.
 
 import { Node } from '../node.js?v=26';
-import { isDrawable, intrinsicSize } from '../util.js';
+import { isDrawable, intrinsicSize, copyMetadata } from '../util.js';
 
 const VERT_SRC = `
   attribute vec2 a_pos;
@@ -19,32 +19,37 @@ const VERT_SRC = `
 class ShaderFXBase extends Node {
   constructor(opts, fragSrc, paramDefs) {
     super(opts);
-    this.inputs = [
-      { name: 'video',  type: 'video',   label: 'видео' },
-      // Все доп.входы — в группу «УПРАВЛЕНИЕ» (свернётся при collapsed)
-      { name: 'amount', type: 'number',  label: 'интенс. от сигнала', group: 'УПРАВЛЕНИЕ' },
-      { name: 'flash',  type: 'trigger', label: 'вспышка!',           group: 'УПРАВЛЕНИЕ' },
-      { name: 'p1',     type: 'number',  label: 'параметр 1 ←',        group: 'УПРАВЛЕНИЕ' },
-      { name: 'p2',     type: 'number',  label: 'параметр 2 ←',        group: 'УПРАВЛЕНИЕ' },
-    ];
+    this.inputs = [{ name: 'video', type: 'video', label: 'видео' }];
     this.outputs = [{ name: 'video', type: 'video', label: 'видео' }];
+
     this.paramDefs = [
-      { kind: 'slider', name: 'amount', label: 'интенсивность',
+      {
+        kind: 'slider', name: 'amount', label: 'интенсивность',
         min: 0, max: 1, step: 0.02, default: 0.5,
         format: (v) => Math.round(v * 100) + '%',
-        group: 'УПРАВЛЕНИЕ' },
-      { kind: 'slider', name: 'flashDecay', label: 'хвост вспышки',
+      },
+      {
+        kind: 'slider', name: 'flashDecay', label: 'хвост вспышки',
         min: 0.7, max: 0.99, step: 0.01, default: 0.9,
         format: (v) => Number(v).toFixed(2),
-        group: 'УПРАВЛЕНИЕ' },
-      // p1/p2 от subclass — тоже в УПРАВЛЕНИЕ если у них нет своей группы
-      ...(paramDefs || []).map((p) => ({ ...p, group: p.group || 'УПРАВЛЕНИЕ' })),
+      },
+      ...(paramDefs || []),
     ];
+
+    // Авто-генерация входов для каждого числового параметра (кроме тех что в group: 'STYLE' или 'INFO')
+    this.paramDefs.forEach(p => {
+      if (p.kind === 'slider' || p.kind === 'toggle' || p.kind === 'select') {
+        this.inputs.push({ name: p.name, type: 'number', label: p.label });
+      }
+    });
+    // Спец-вход для вспышки
+    this.inputs.push({ name: 'flash', type: 'trigger', label: 'вспышка!' });
+
     this._flash = 0;
     this._fragSrc = fragSrc;
     this.canvas = document.createElement('canvas');
-    this.canvas.width = 1024;
-    this.canvas.height = 576;
+    this.canvas.width = 1280;
+    this.canvas.height = 720;
     this.gl = this.canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false });
     this._program = null;
     this._tex = null;
@@ -97,6 +102,10 @@ class ShaderFXBase extends Node {
     };
   }
 
+  init() {
+    this.moveSocketsToParams();
+  }
+
   tick(ctx) {
     if (!this.gl || !this._program) return;
     const v = ctx.getInputValues(this.id, 'video').filter(isDrawable)[0];
@@ -121,29 +130,34 @@ class ShaderFXBase extends Node {
     catch { return; }
 
     const t = (performance.now() - this._t0) / 1000;
-    const amountMod = ctx.getInputValues(this.id, 'amount').filter((n) => typeof n === 'number')[0];
-    let amount = amountMod ?? this.params.amount ?? 0.5;
-
-    // Триггер «вспышка!» — на каждое событие подбрасываем _flash в 1
-    const flashes = ctx.getInputValues(this.id, 'flash');
-    if (flashes.some((t) => t)) this._flash = 1;
-    // и плавно затухает каждый кадр
-    this._flash *= this.params.flashDecay ?? 0.9;
-    if (this._flash > 0.001) {
-      // вспышка перекрывает базовую интенсивность, если выше
-      amount = Math.max(amount, this._flash);
+    
+    // ── Сбор значений параметров с учетом модуляции
+    const runtimeParams = {};
+    for (const p of this.paramDefs) {
+        const mod = ctx.getInputValues(this.id, p.name).filter(v => typeof v === 'number')[0];
+        runtimeParams[p.name] = mod ?? this.params[p.name];
     }
 
-    const p1Mod = ctx.getInputValues(this.id, 'p1').filter((n) => typeof n === 'number')[0];
-    const p2Mod = ctx.getInputValues(this.id, 'p2').filter((n) => typeof n === 'number')[0];
+    // Спец-логика для вспышки (перекрывает amount)
+    const flashes = ctx.getInputValues(this.id, 'flash');
+    if (flashes.some(t => t)) this._flash = 1;
+    this._flash *= this.params.flashDecay ?? 0.9;
+    
+    let finalAmount = runtimeParams.amount ?? 0.5;
+    if (this._flash > 0.001) finalAmount = Math.max(finalAmount, this._flash);
 
     gl.uniform1i(this._u.tex, 0);
     if (this._u.res) gl.uniform2f(this._u.res, this.canvas.width, this.canvas.height);
     if (this._u.t)   gl.uniform1f(this._u.t, t);
-    if (this._u.amount) gl.uniform1f(this._u.amount, amount);
-    if (this._u.p1) gl.uniform1f(this._u.p1, p1Mod ?? this.params.p1 ?? 0.5);
-    if (this._u.p2) gl.uniform1f(this._u.p2, p2Mod ?? this.params.p2 ?? 0.5);
+    if (this._u.amount) gl.uniform1f(this._u.amount, finalAmount);
+    
+    // Динамическая передача p1, p2 и других в юниформы
+    if (this._u.p1) gl.uniform1f(this._u.p1, runtimeParams.p1 ?? 0.5);
+    if (this._u.p2) gl.uniform1f(this._u.p2, runtimeParams.p2 ?? 0.5);
+    if (this._u.p3) gl.uniform1f(this._u.p3, runtimeParams.p3 ?? 0.5);
+
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    copyMetadata(v, this.canvas);
   }
 
   getOutput(name) { return name === 'video' ? this.canvas : null; }

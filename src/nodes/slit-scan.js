@@ -1,11 +1,7 @@
 // Slit-scan — каждый столбец/строка кадра отрисован из своего момента времени.
-// Реализация: один большой canvas-буфер. На каждом тике сдвигаем содержимое
-// и рисуем только тонкую «щель» из текущего видео в крайнюю позицию.
-// Получается «временная развёртка» — двигаешь рукой → она «размазывается»
-// по горизонтали (или вертикали) по мере движения времени.
 
 import { Node } from '../node.js?v=26';
-import { isDrawable, intrinsicSize } from '../util.js';
+import { isDrawable, intrinsicSize, copyMetadata } from '../util.js';
 
 export class SlitScanNode extends Node {
   static title = 'Slit-scan (развёртка)';
@@ -37,10 +33,15 @@ export class SlitScanNode extends Node {
         format: (v) => v + 'px' },
     ];
 
+
     this.canvas = document.createElement('canvas');
     this.canvas.width = 640;
     this.canvas.height = 480;
     this.ctx2d = this.canvas.getContext('2d');
+  }
+
+  init() {
+    this.moveSocketsToParams();
   }
 
   tick(ctx) {
@@ -58,39 +59,31 @@ export class SlitScanNode extends Node {
     const resets = ctx.getInputValues(this.id, 'reset');
     if (resets.some((t) => t)) this.ctx2d.clearRect(0, 0, W, H);
 
-    const dir = this.params.dir || 'horizontal';
-    const speed = Math.max(1, Math.round(this.params.speed ?? 4));
-    const sliceWidth = Math.max(1, Math.round(this.params.sliceWidth ?? 4));
+    const speed  = Math.round(this.getParam(ctx, 'speed', 4));
+    const sliceW = Math.round(this.getParam(ctx, 'sliceWidth', 4));
+    const dir    = this.getParam(ctx, 'dir', 'horizontal');
 
-    // Шаг 1: сдвигаем сами в себя на speed пикселей в нужную сторону
-    // drawImage самого себя — стандартный приём
+    this.ctx2d.save();
     if (dir === 'horizontal') {
-      // содержимое уходит влево, новое появляется справа
-      this.ctx2d.globalCompositeOperation = 'copy';
-      this.ctx2d.drawImage(this.canvas, -speed, 0);
-      this.ctx2d.globalCompositeOperation = 'source-over';
-      // в правый край рисуем срез из видео шириной sliceWidth
-      // берём столбец из правой части источника (можно из центра — выглядит интересно)
-      const srcX = w - sliceWidth;
-      this.ctx2d.drawImage(v, srcX, 0, sliceWidth, h, W - sliceWidth, 0, sliceWidth, H);
+      this.ctx2d.drawImage(this.canvas, speed, 0, W - speed, H, 0, 0, W - speed, H);
+      this.ctx2d.drawImage(v, W - sliceW, 0, sliceW, H, W - speed, 0, speed, H);
     } else if (dir === 'horizontal_r') {
-      this.ctx2d.globalCompositeOperation = 'copy';
-      this.ctx2d.drawImage(this.canvas, speed, 0);
-      this.ctx2d.globalCompositeOperation = 'source-over';
-      this.ctx2d.drawImage(v, 0, 0, sliceWidth, h, 0, 0, sliceWidth, H);
+      this.ctx2d.drawImage(this.canvas, 0, 0, W - speed, H, speed, 0, W - speed, H);
+      this.ctx2d.drawImage(v, 0, 0, sliceW, H, 0, 0, speed, H);
     } else if (dir === 'vertical') {
-      this.ctx2d.globalCompositeOperation = 'copy';
-      this.ctx2d.drawImage(this.canvas, 0, -speed);
-      this.ctx2d.globalCompositeOperation = 'source-over';
-      const srcY = h - sliceWidth;
-      this.ctx2d.drawImage(v, 0, srcY, w, sliceWidth, 0, H - sliceWidth, W, sliceWidth);
+      this.ctx2d.drawImage(this.canvas, 0, speed, W, H - speed, 0, 0, W, H - speed);
+      this.ctx2d.drawImage(v, 0, H - sliceW, W, sliceW, 0, H - speed, W, speed);
     } else if (dir === 'vertical_r') {
-      this.ctx2d.globalCompositeOperation = 'copy';
-      this.ctx2d.drawImage(this.canvas, 0, speed);
-      this.ctx2d.globalCompositeOperation = 'source-over';
-      this.ctx2d.drawImage(v, 0, 0, w, sliceWidth, 0, 0, W, sliceWidth);
+      this.ctx2d.drawImage(this.canvas, 0, 0, W, H - speed, 0, speed, W, H - speed);
+      this.ctx2d.drawImage(v, 0, 0, W, sliceW, 0, 0, W, speed);
     }
+    this.ctx2d.restore();
+
+    copyMetadata(v, this.canvas);
   }
 
-  getOutput(name) { return name === 'video' ? this.canvas : null; }
+  getOutput(name) {
+    if (name === 'video') return this.canvas;
+    return null;
+  }
 }

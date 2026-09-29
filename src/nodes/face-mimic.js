@@ -10,11 +10,11 @@
 //   ЩЁКИ:     надуты / сжаты Л/П
 
 import { Node } from '../node.js?v=26';
-import { isDrawable, intrinsicSize } from '../util.js';
+import { isDrawable, intrinsicSize, copyMetadata } from '../util.js';
 import { t } from '../i18n.js';
 
-const MP_URL  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/vision_bundle.mjs';
-const MP_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22-rc.20250304/wasm';
+const MP_URL  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+const MP_WASM = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
 
 let _facePromise = null;
 async function getFace() {
@@ -40,7 +40,7 @@ async function getFace() {
 export class FaceMimicNode extends Node {
   static title = 'Лицо (мимика)';
   static icon = '🎭';
-  static category = 'analysis';
+  static category = 'interaction';
   static keywords = 'mediapipe face emotion mimicry blendshapes улыбка глаза рот удивление поцелуй моргание';
 
   constructor(opts) {
@@ -164,6 +164,7 @@ export class FaceMimicNode extends Node {
       this.canvas.height = vh;
     }
     this.ctx2d.drawImage(v, 0, 0, this.canvas.width, this.canvas.height);
+    copyMetadata(v, this.canvas);
     this.values.video = this.canvas;
 
     if (!this._detector) return;
@@ -244,6 +245,10 @@ export class FaceMimicNode extends Node {
           this.statusEl.textContent = t('mp.show-face', 'покажи лицо камере');
           this.statusEl.style.color = '#feef33';
         }
+        // ЭКСПОРТ ДАННЫХ
+        if (this._lastFace) {
+          this.canvas.faceData = { landmarks: this._lastFace };
+        }
       } catch (e) { console.error('face-mimic:', e); }
     } else {
       this.values.blink_trig = false;
@@ -296,5 +301,10 @@ export class FaceMimicNode extends Node {
 
   getOutput(name) {
     return this.values[name];
+  }
+
+  destroy() {
+    this._detector = null;
+    this.canvas = null; this.ctx2d = null;
   }
 }

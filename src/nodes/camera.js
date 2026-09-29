@@ -89,6 +89,7 @@ export class CameraNode extends Node {
     wrap.appendChild(btn);
     wrap.appendChild(status);
     this.bodyEl.prepend(wrap);
+    this.moveSocketsToParams();
   }
 
   async refreshDevices() {

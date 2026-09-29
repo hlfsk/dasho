@@ -89,8 +89,8 @@ export class MapperNode extends Node {
     for (let j = 0; j <= N; j++) {
       for (let i = 0; i <= N; i++) {
         pts.push({
-          x: 0.05 + 0.9 * (i / N),
-          y: 0.05 + 0.9 * (j / N),
+          x: i / N,
+          y: j / N,
         });
       }
     }
@@ -190,10 +190,10 @@ export class MapperNode extends Node {
     resetBtn.style.cssText = 'font-size:0.7rem;padding:0.3rem 0.5rem;background:rgba(255,255,255,0.06);color:white;border:1px solid rgba(255,255,255,0.12);box-shadow:none;margin-top:0.3rem';
     resetBtn.addEventListener('click', () => this.resetPoints());
 
-    this.bodyEl.appendChild(previewWrap);
     this.bodyEl.appendChild(ptsRow);
     this.bodyEl.appendChild(fsBtn);
     this.bodyEl.appendChild(resetBtn);
+    this.moveSocketsToParams();
   }
 
   // Меняет subdivisions на ±1 (с обновлением слайдера и сетки)
@@ -347,11 +347,11 @@ export class MapperNode extends Node {
     const v = ctx.getInputValues(this.id, 'video').filter(isDrawable)[0];
 
     // Адаптируем сетку под параметр
-    const N = Math.round(this.params.subdivisions ?? 1);
+    const N = Math.round(this.getParam(ctx, 'subdivisions', 1));
     this.ensureGrid(N);
 
     const W = this.canvas.width;
-    const aspect = this.params.aspect ?? (16 / 9);
+    const aspect = this.getParam(ctx, 'aspect', 16/9);
     const targetH = Math.round(W / aspect);
     if (this.canvas.height !== targetH) this.canvas.height = targetH;
 

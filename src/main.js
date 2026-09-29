@@ -2,20 +2,20 @@
 
 // Миграция: удаляем устаревший автосейв (от старых версий, который мог
 // «зависать» сценой при загрузке). Сцены 1-9 не трогаем.
-try { localStorage.removeItem('dasho.autosave'); } catch {}
+try { localStorage.removeItem('dasho.autosave'); } catch { }
 
 // Миграция: старые сцены/Cookbook с params.color = 'pink' / 'rainbow' / etc
 // → переводим в hex + отдельный colorMode для радуги (для нод paint/text/particles3d).
 const LEGACY_COLOR_MAP = {
-  pink:    '#ff4d2e',
-  red:     '#ff4d2e',
-  green:   '#feef33',
-  yellow:  '#feef33',
-  blue:    '#00e5d5',
-  cyan:    '#00e5d5',
-  purple:  '#c279ff',
-  white:   '#ffffff',
-  black:   '#0a0a14',
+  pink: '#ff4d2e',
+  red: '#ff4d2e',
+  green: '#feef33',
+  yellow: '#feef33',
+  blue: '#00e5d5',
+  cyan: '#00e5d5',
+  purple: '#c279ff',
+  white: '#ffffff',
+  black: '#0a0a14',
 };
 function migrateLegacyColors(ns) {
   if (!ns?.params) return;
@@ -64,134 +64,184 @@ import { setupWires, clearAllWires, getInputsOf, getConnections, addWireProgramm
 import { setupPalette } from './palette.js';
 import { registerNodeType, getRegistry, BLEND_MODES } from './node.js?v=26';
 
-import { CameraNode }         from './nodes/camera.js?v=3';
-import { IPhoneCameraNode }   from './nodes/iphone-camera.js';
-import { OBSCameraNode }      from './nodes/obs-camera.js';
-import { MicrophoneNode }     from './nodes/microphone.js';
-import { AudioFileNode }      from './nodes/audio-file.js';
-import { VideoFileNode }      from './nodes/video-file.js';
-import { VideoLinkNode }      from './nodes/video-link.js';
+import { CameraNode } from './nodes/camera.js?v=3';
+import { IPhoneCameraNode } from './nodes/iphone-camera.js';
+import { OBSCameraNode } from './nodes/obs-camera.js';
+import { MicrophoneNode } from './nodes/microphone.js';
+import { AudioMasterNode } from './nodes/audio-master.js';
+import { AudioFileNode } from './nodes/audio-file.js';
+import { VideoFileNode } from './nodes/video-file.js';
+import { VideoLinkNode } from './nodes/video-link.js';
 import { UniversalSourceNode } from './nodes/universal-source.js';
-import { WebFrameNode }       from './nodes/web-frame.js?v=9';
-import { ScreenCaptureNode }  from './nodes/screen-capture.js';
-import { TextSourceNode }     from './nodes/text-source.js?v=3';
-import { SvgSourceNode }      from './nodes/svg-source.js?v=5';
-import { GifGiphyNode }       from './nodes/gif-giphy.js?v=3';
-import { Source3DNode }       from './nodes/source-3d.js?v=2';
-import { GradientNode }       from './nodes/gradient.js';
-import { NoiseNode }          from './nodes/noise.js?v=2';
-import { ShaderSourceNode }   from './nodes/shader-source.js?v=3';
-import { CodeJSNode }         from './nodes/code-js.js';
-import { MidiInputNode }      from './nodes/midi-input.js';
-import { OSCInNode }          from './nodes/osc-in.js?v=4';
-import { SerialInNode }       from './nodes/serial-in.js';
-import { AudioAnalyseNode }   from './nodes/audio-analyse.js';
-import { MediaPipeBodyNode }  from './nodes/mediapipe-body.js';
-import { HandDetailNode }    from './nodes/hand-detail.js?v=12';
-import { StyleTransferNode } from './nodes/style-transfer.js?v=3';
-import { AIApiNode }         from './nodes/ai-api.js?v=2';
-import { FaceMimicNode }     from './nodes/face-mimic.js?v=2';
-import { LfoNode }            from './nodes/lfo.js';
-import { MetronomeNode }      from './nodes/metronome.js';
+import { WebFrameNode } from './nodes/web-frame.js?v=9';
+import { ScreenCaptureNode } from './nodes/screen-capture.js';
+import { TextSourceNode } from './nodes/text-source.js?v=3';
+import { SvgSourceNode } from './nodes/svg-source.js?v=5';
+import { GifGiphyNode } from './nodes/gif-giphy.js?v=3';
+import { Source3DNode } from './nodes/source-3d.js?v=2';
+import { GradientNode } from './nodes/gradient.js';
+import { NoiseNode } from './nodes/noise.js?v=2';
+import { ShaderSourceNode } from './nodes/shader-source.js?v=3';
+import { CodeJSNode } from './nodes/code-js.js';
+import { MidiInputNode } from './nodes/midi-input.js';
+import { OSCInNode } from './nodes/osc-in.js?v=4';
+import { SerialInNode } from './nodes/serial-in.js';
+import { AudioAnalyseNode } from './nodes/audio-analyse.js';
+import { FaceLandmarkerNode } from './nodes/face-landmarker.js';
+import { HandLandmarkerNode } from './nodes/hand-landmarker.js';
+import { PoseLandmarkerNode } from './nodes/pose-landmarker.js';
+import { HolisticLandmarkerNode } from './nodes/holistic-landmarker.js';
+import { InteractionMasterNode } from './nodes/interaction-master.js';
+import { FaceMimicNode } from './nodes/face-mimic.js';
+import { HandDetailNode } from './nodes/hand-detail.js';
+import { CyberDetectorNode } from './nodes/cyber-detector.js';
+import { LfoNode } from './nodes/lfo.js';
+import { MetronomeNode } from './nodes/metronome.js';
 import { MotionGeneratorNode } from './nodes/motion-generator.js?v=2';
-import { MathNode }           from './nodes/math.js';
-import { BoosterNode }        from './nodes/booster.js?v=2';
-import { TrailingNode }       from './nodes/trailing.js?v=3';
+import { MathNode } from './nodes/math.js';
+import { BoosterNode } from './nodes/booster.js?v=2';
+import { TrailingNode } from './nodes/trailing.js?v=3';
 import {
   GlitchEffectNode, GlowEffectNode, FluidEffectNode,
   IridescentEffectNode, GlassEffectNode, SpectrumEffectNode,
   KaleidoscopeEffectNode, SoftEdgeEffectNode, CRTEffectNode,
 } from './nodes/fx-shaders.js?v=5';
-import { SilhouetteNode }     from './nodes/silhouette.js';
-import { SlitScanNode }       from './nodes/slit-scan.js';
-import { HeatmapNode }         from './nodes/heatmap.js?v=3';
-import { BodyParticlesNode }   from './nodes/body-particles.js?v=8';
-import { BubblesNode }        from './nodes/bubbles.js?v=3';
-import { ParticlesNode }      from './nodes/particles.js?v=2';
-import { Particles3DNode }    from './nodes/particles-3d.js?v=3';
-import { PaintNode }          from './nodes/paint.js?v=5';
-import { MixNode }            from './nodes/mix.js?v=2';
-import { MapperNode }         from './nodes/mapper.js?v=2';
+import { SilhouetteNode } from './nodes/silhouette.js';
+import { SlitScanNode } from './nodes/slit-scan.js';
+import { HeatmapNode } from './nodes/heatmap.js?v=3';
+import { BodyParticlesNode } from './nodes/body-particles.js?v=8';
+import { BubblesNode } from './nodes/bubbles.js?v=3';
+import { ParticlesNode } from './nodes/particles.js?v=2';
+import { Particles3DNode } from './nodes/particles-3d.js?v=3';
+import { WaterNode } from './nodes/water.js';
+import { UniversalParticlesNode } from './nodes/universal-particles.js';
+import { UniversalParticles3DNode } from './nodes/universal-particles-3d.js';
+import { UniversalParticles3DNodeV2 } from './nodes/universal-particles-3d-v2.js';
+import { PaintNode } from './nodes/paint.js?v=5';
+import { MixNode } from './nodes/mix.js?v=2';
+import { MapperNode } from './nodes/mapper.js?v=2';
 import { ProjectorOutputNode } from './nodes/projector-output.js?v=3';
-import { PlayShareNode }      from './nodes/play-share.js?v=3';
-import { FinalCollageNode }   from './nodes/final-collage.js';
+import { PlayShareNode } from './nodes/play-share.js?v=3';
+import { FinalCollageNode } from './nodes/final-collage.js';
 
 // Регистрация типов нод (порядок = порядок в палитре).
 // Категории: sources → analysis → effects → routing → output.
-registerNodeType('Camera',          CameraNode);
-registerNodeType('IPhoneCamera',    IPhoneCameraNode);
-registerNodeType('OBSCamera',       OBSCameraNode);
-registerNodeType('Microphone',      MicrophoneNode);
-registerNodeType('AudioFile',       AudioFileNode);
-registerNodeType('VideoFile',       VideoFileNode);
-registerNodeType('VideoLink',       VideoLinkNode);
+registerNodeType('Camera', CameraNode);
+registerNodeType('IPhoneCamera', IPhoneCameraNode);
+registerNodeType('OBSCamera', OBSCameraNode);
+registerNodeType('Microphone', MicrophoneNode);
+registerNodeType('AudioMaster', AudioMasterNode);
+registerNodeType('AudioFile', AudioFileNode);
+registerNodeType('VideoFile', VideoFileNode);
+registerNodeType('VideoLink', VideoLinkNode);
 registerNodeType('UniversalSource', UniversalSourceNode);
-registerNodeType('WebFrame',        WebFrameNode);
-registerNodeType('ScreenCapture',   ScreenCaptureNode);
-registerNodeType('TextSource',      TextSourceNode);
-registerNodeType('SvgSource',       SvgSourceNode);
-registerNodeType('GifGiphy',        GifGiphyNode);
-registerNodeType('Source3D',        Source3DNode);
-registerNodeType('Gradient',        GradientNode);
-registerNodeType('Noise',           NoiseNode);
-registerNodeType('ShaderSource',    ShaderSourceNode);
-registerNodeType('CodeJS',          CodeJSNode);
-registerNodeType('MidiInput',       MidiInputNode);
-registerNodeType('OSCIn',           OSCInNode);
-registerNodeType('SerialIn',        SerialInNode);
+registerNodeType('WebFrame', WebFrameNode);
+registerNodeType('ScreenCapture', ScreenCaptureNode);
+registerNodeType('TextSource', TextSourceNode);
+registerNodeType('SvgSource', SvgSourceNode);
+registerNodeType('GifGiphy', GifGiphyNode);
+registerNodeType('Source3D', Source3DNode);
+registerNodeType('Gradient', GradientNode);
+registerNodeType('Noise', NoiseNode);
+registerNodeType('ShaderSource', ShaderSourceNode);
+registerNodeType('CodeJS', CodeJSNode);
+registerNodeType('MidiInput', MidiInputNode);
+registerNodeType('OSCIn', OSCInNode);
+registerNodeType('SerialIn', SerialInNode);
 // Старые ноды растворены: PhoneSensors → OSCIn (датчики авто-парсятся),
 // NDIOSCInput → разбит на iPhoneCamera (видео) + OSCIn (данные).
 // Алиасы для обратной совместимости со старыми сценами/Cookbook:
-registerNodeType('PhoneSensors',    OSCInNode);
-registerNodeType('NDIOSCInput',     IPhoneCameraNode);
-registerNodeType('AudioAnalyse',    AudioAnalyseNode);
-registerNodeType('MediaPipeBody',   MediaPipeBodyNode);
-registerNodeType('HandDetail',      HandDetailNode);
-// Алиас для обратной совместимости со старыми сохранёнными сценами/Cookbook
-registerNodeType('FingerBrush',     HandDetailNode);
-registerNodeType('FaceMimic',       FaceMimicNode);
-registerNodeType('LFO',             LfoNode);
-registerNodeType('Metronome',       MetronomeNode);
+registerNodeType('PhoneSensors', OSCInNode);
+registerNodeType('NDIOSCInput', IPhoneCameraNode);
+registerNodeType('FaceLandmarker', FaceLandmarkerNode);
+registerNodeType('HandLandmarker', HandLandmarkerNode);
+registerNodeType('PoseLandmarker', PoseLandmarkerNode);
+registerNodeType('HolisticLandmarker', HolisticLandmarkerNode);
+registerNodeType('InteractionMaster', InteractionMasterNode);
+registerNodeType('FaceMimic', FaceMimicNode);
+registerNodeType('HandDetail', HandDetailNode);
+registerNodeType('CyberDetector', CyberDetectorNode);
+
+registerNodeType('AudioAnalyse', AudioAnalyseNode);
+registerNodeType('LFO', LfoNode);
+registerNodeType('Metronome', MetronomeNode);
 registerNodeType('MotionGenerator', MotionGeneratorNode);
-registerNodeType('Math',            MathNode);
-registerNodeType('Booster',         BoosterNode);
-registerNodeType('StyleTransfer',  StyleTransferNode);
-registerNodeType('AIApi',          AIApiNode);
-registerNodeType('Trailing',       TrailingNode);
-registerNodeType('Glitch',         GlitchEffectNode);
-registerNodeType('Glow',           GlowEffectNode);
-registerNodeType('Fluid',          FluidEffectNode);
-registerNodeType('Iridescent',     IridescentEffectNode);
-registerNodeType('Glass',          GlassEffectNode);
-registerNodeType('Spectrum',       SpectrumEffectNode);
-registerNodeType('Kaleidoscope',   KaleidoscopeEffectNode);
-registerNodeType('SoftEdge',       SoftEdgeEffectNode);
-registerNodeType('CRT',            CRTEffectNode);
-registerNodeType('Silhouette',     SilhouetteNode);
-registerNodeType('SlitScan',       SlitScanNode);
-registerNodeType('Heatmap',        HeatmapNode);
-registerNodeType('BodyParticles',  BodyParticlesNode);
-registerNodeType('Bubbles',        BubblesNode);
-registerNodeType('Particles',      ParticlesNode);
-registerNodeType('Particles3D',    Particles3DNode);
-registerNodeType('Paint',          PaintNode);
-registerNodeType('Mix',            MixNode);
-registerNodeType('Mapper',          MapperNode);
+registerNodeType('Math', MathNode);
+registerNodeType('Booster', BoosterNode);
+registerNodeType('Trailing', TrailingNode);
+registerNodeType('Glitch', GlitchEffectNode);
+registerNodeType('Glow', GlowEffectNode);
+registerNodeType('Fluid', FluidEffectNode);
+registerNodeType('Iridescent', IridescentEffectNode);
+registerNodeType('Glass', GlassEffectNode);
+registerNodeType('Spectrum', SpectrumEffectNode);
+registerNodeType('Kaleidoscope', KaleidoscopeEffectNode);
+registerNodeType('SoftEdge', SoftEdgeEffectNode);
+registerNodeType('CRT', CRTEffectNode);
+registerNodeType('Water', WaterNode);
+registerNodeType('Silhouette', SilhouetteNode);
+registerNodeType('SlitScan', SlitScanNode);
+registerNodeType('Heatmap', HeatmapNode);
+registerNodeType('BodyParticles', BodyParticlesNode); // legacy
+registerNodeType('Bubbles', BubblesNode);
+registerNodeType('Particles', ParticlesNode); // legacy
+registerNodeType('Particles3D', Particles3DNode); // legacy
+registerNodeType('UniversalParticles', UniversalParticlesNode);
+registerNodeType('UniversalParticles3D', UniversalParticles3DNode);
+registerNodeType('UniversalParticles3DV2', UniversalParticles3DNodeV2);
+registerNodeType('Paint', PaintNode);
+registerNodeType('Mix', MixNode);
+registerNodeType('Mapper', MapperNode);
 registerNodeType('ProjectorOutput', ProjectorOutputNode);
-registerNodeType('PlayShare',       PlayShareNode);
-registerNodeType('FinalCollage',    FinalCollageNode);
+registerNodeType('PlayShare', PlayShareNode);
+registerNodeType('FinalCollage', FinalCollageNode);
 
 // ── DOM-ссылки ──────────────────────────────────────────────────────────
-const dock       = document.getElementById('dock');
-const dotsBg     = document.getElementById('dots-bg');
-const wiresEl    = document.getElementById('wires');
-const stage      = document.getElementById('stage');
-const palette    = document.getElementById('palette');
+const dock = document.getElementById('dock');
+const dotsBg = document.getElementById('dots-bg');
+const wiresEl = document.getElementById('wires');
+const stage = document.getElementById('stage');
+const palette = document.getElementById('palette');
 const paletteBtn = document.getElementById('palette-btn');
-const clearBtn   = document.getElementById('clear-all-btn');
-const fsBtn      = document.getElementById('fullscreen-btn');
-const frameBtn   = document.getElementById('frame-btn');
-const toastEl    = document.getElementById('toast');
+const fsBtn = document.getElementById('fullscreen-btn');
+const frameBtn = document.getElementById('frame-btn');
+const toastEl = document.getElementById('toast');
+
+const nodes = new Map(); // id → Node-instance
+
+// Кнопка «Очистить» в шапке (Мгновенное действие без подтверждения для теста)
+const _clearBtn = document.getElementById('clear-all-btn');
+if (_clearBtn) {
+  _clearBtn.onclick = function(e) {
+    console.log('DÄSHO: Fast Clear All Triggered');
+    try {
+      // 1. Очищаем все ноды в графе
+      if (typeof nodes !== 'undefined' && nodes.values) {
+        for (const n of Array.from(nodes.values())) {
+          try { n.destroy?.(); } catch(e) {}
+          try { n.el?.remove(); } catch(e) {}
+        }
+        nodes.clear();
+      }
+      
+      // 2. Очищаем провода
+      if (typeof clearAllWires === 'function') {
+        clearAllWires();
+      }
+      
+      // 3. Жесткая зачистка DOM (на случай если ноды созданы вне Map)
+      document.querySelectorAll('.node').forEach(el => el.remove());
+      document.querySelectorAll('.frame').forEach(el => el.remove());
+      
+      // 4. Сброс автосейва
+      localStorage.removeItem('dasho.autosave');
+      
+      toast('🗑 холст очищен');
+    } catch (err) {
+      console.error('DÄSHO: Clear error:', err);
+    }
+  };
+}
 
 // ── Тосты — короткое уведомление снизу ─────────────────────────────────
 let _toastTimer;
@@ -209,8 +259,8 @@ function makeFrame(x, y, w = 320, h = 220, title = 'комментарий') {
   const f = document.createElement('div');
   f.className = 'frame';
   f.style.left = x + 'px';
-  f.style.top  = y + 'px';
-  f.style.width  = w + 'px';
+  f.style.top = y + 'px';
+  f.style.width = w + 'px';
   f.style.height = h + 'px';
 
   const titleEl = document.createElement('input');
@@ -239,7 +289,7 @@ function makeFrame(x, y, w = 320, h = 220, title = 'комментарий') {
     const move = (ev) => {
       const z = viewport.zoom || 1;
       f.style.left = (nx + (ev.clientX - sx) / z) + 'px';
-      f.style.top  = (ny + (ev.clientY - sy) / z) + 'px';
+      f.style.top = (ny + (ev.clientY - sy) / z) + 'px';
     };
     const up = () => {
       document.removeEventListener('pointermove', move);
@@ -258,7 +308,7 @@ function makeFrame(x, y, w = 320, h = 220, title = 'комментарий') {
     const sx = e.clientX, sy = e.clientY;
     const move = (ev) => {
       const z = viewport.zoom || 1;
-      f.style.width  = Math.max(160, sw + (ev.clientX - sx) / z) + 'px';
+      f.style.width = Math.max(160, sw + (ev.clientX - sx) / z) + 'px';
       f.style.height = Math.max(120, sh + (ev.clientY - sy) / z) + 'px';
     };
     const up = () => {
@@ -277,7 +327,7 @@ function makeFrame(x, y, w = 320, h = 220, title = 'комментарий') {
 if (frameBtn) {
   frameBtn.addEventListener('click', () => {
     const z = viewport.zoom || 1;
-    const cx = (window.innerWidth  / 2 - viewport.panX) / z - 160;
+    const cx = (window.innerWidth / 2 - viewport.panX) / z - 160;
     const cy = (window.innerHeight / 2 - viewport.panY) / z - 110;
     const jitter = () => (Math.random() * 60 - 30) / z;
     makeFrame(cx + jitter(), cy + jitter(), 320, 220, 'комментарий');
@@ -307,7 +357,7 @@ function serializeGraph() {
       id: n.id,
       key,
       x: parseFloat(n.el?.style.left) || n.x || 0,
-      y: parseFloat(n.el?.style.top)  || n.y || 0,
+      y: parseFloat(n.el?.style.top) || n.y || 0,
       params: { ...n.params },
       outputAlpha: n.outputAlpha ?? 1,
       outputZ: n.outputZ ?? 0,
@@ -316,14 +366,14 @@ function serializeGraph() {
   }
   const wires = getConnections().map((c) => ({
     from: c.fromNodeId, fromName: c.fromName,
-    to:   c.toNodeId,   toName:   c.toName,
+    to: c.toNodeId, toName: c.toName,
   }));
   return { v: 1, nodes: nodesData, wires };
 }
 
 function clearAllNodes() {
   for (const n of [...nodes.values()]) {
-    try { n.destroy?.(); } catch {}
+    try { n.destroy?.(); } catch { }
     n.el?.remove();
   }
   nodes.clear();
@@ -342,7 +392,7 @@ function deserializeGraph(state) {
     idMap.set(ns.id, newNode.id);
     if (typeof newNode.outputAlpha !== 'undefined' && typeof ns.outputAlpha === 'number') {
       newNode.outputAlpha = ns.outputAlpha;
-      newNode._baseAlpha  = ns.outputAlpha;
+      newNode._baseAlpha = ns.outputAlpha;
       // Обновим слайдер «вывод» в DOM
       const out = newNode.el?.querySelector('.param-output input[type="range"]');
       if (out) { out.value = ns.outputAlpha; out.dispatchEvent(new Event('input', { bubbles: true })); }
@@ -631,7 +681,7 @@ document.querySelectorAll('#scene-bar .slot').forEach((s) => {
       return;
     }
     if (e.shiftKey) saveScene(i);
-    else            loadScene(i);
+    else loadScene(i);
   });
   s.addEventListener('contextmenu', (e) => {
     e.preventDefault();
@@ -658,7 +708,7 @@ window.addEventListener('keydown', (e) => {
   if (/^[1-9]$/.test(e.key)) {
     e.preventDefault();
     if (e.shiftKey) saveScene(e.key);
-    else            loadScene(e.key);
+    else loadScene(e.key);
   }
 });
 
@@ -874,7 +924,7 @@ function startRecording() {
   }
 }
 function stopRecording() {
-  try { _mediaRecorder?.stop(); } catch {}
+  try { _mediaRecorder?.stop(); } catch { }
   _mediaRecorder = null;
   recBtn.classList.remove('recording');
   recBtn.textContent = '●REC';
@@ -1016,14 +1066,14 @@ sceneBar?.appendChild(importBtn);
     document.body.classList.remove('projector-mode');
     streamBtn.textContent = '👁';
     streamBtn.title = 'Стрим — спрятать UI';
-    try { document.exitFullscreen?.().catch(() => {}); } catch {}
+    try { document.exitFullscreen?.().catch(() => { }); } catch { }
   }
   function enterStream() {
     document.body.classList.add('projector-mode');
     streamBtn.title = 'Стрим';
-    try { document.documentElement.requestFullscreen?.().catch(() => {}); } catch {}
+    try { document.documentElement.requestFullscreen?.().catch(() => { }); } catch { }
     // Подсказка как выйти
-    try { toast?.('👁 двойной тап по экрану — выход'); } catch {}
+    try { toast?.('👁 двойной тап по экрану — выход'); } catch { }
   }
   streamBtn.addEventListener('click', () => {
     if (document.body.classList.contains('projector-mode')) exitStream();
@@ -1123,14 +1173,209 @@ sceneBar?.appendChild(importBtn);
 // 📚 ГОТОВЫЕ ШОУ (темплейты сцен)
 // ─────────────────────────────────────────────────────────────────────────
 const TEMPLATES = [
+  {
+    name: '🚀 NEW_TEST: 3D Магия',
+    desc: 'Идеальная связка: Руки + Мастер + 3D Частицы. Работает глубина (Z), сжатие кулака и развод рук!',
+    cat: 'ШОУ',
+    tags: ['new', '3d', 'magic'],
+    nodes: [
+      { key: 'Camera', x: 50, y: 350, params: { mirror: 'on' } },
+      { key: 'HandLandmarker', x: 280, y: 150, params: { showHUD: true } },
+      { key: 'InteractionMaster', x: 580, y: 150, params: { smooth: 0.7, elastic: 0.5, passthroughRawData: true } },
+      { key: 'AudioMaster', x: 580, y: 450, params: { source: 'mic', bpm: 120, sens: 1.0 } },
+      { key: 'UniversalParticles3DV2', x: 920, y: 150, params: { 
+          shape: 'sphere', color: '#feef33', count: 9991, 
+          size: 0.1, speed: 0.6, alpha: 1.0, objectScale: 0.6,
+          shimmer: 0.09, sharpness: 0.1, glow: 0.3, spread: 1.5,
+          magicTrack: true
+      } },
+      { key: 'FinalCollage', x: 1250, y: 350, params: { fit: 'cover' } }
+    ],
+    wires: [
+      [0, 'video', 1, 'video'], [1, 'video', 2, 'video'], [2, 'video', 4, 'video'],
+      [3, 'audio', 4, 'audio'],
+      [2, 'scale', 4, 'objectScale'], [2, 'intensity', 4, 'glow'], [2, 'speed', 4, 'speed'],
+      [4, 'video', 5, 'video']
+    ]
+  },
+  {
+    id: 'glitch-audio',
+    cat: 'EXPERIMENTS',
+    name: '🚀 GLITCH: Звуковой Взрыв',
+    desc: 'Аудио-реактивное искажение видео. Голос буквально "рвет" пиксели.',
+    nodes: [
+      { key: 'Camera', x: 50, y: 350, params: { mirror: 'on' } },
+      { key: 'AudioMaster', x: 300, y: 450, params: { source: 'mic' } },
+      { key: 'Glitch', x: 600, y: 350, params: { amount: 0.8 } },
+      { key: 'FinalCollage', x: 950, y: 350, params: { fit: 'cover' } }
+    ],
+    wires: [
+      [0, 'video', 2, 'video'],
+      [2, 'video', 3, 'video'],
+      [1, 'audio', 2, 'audio']
+    ]
+  },
+  {
+    name: '🧪 ТЕСТ: Мастерская',
+    desc: 'Все ноды для настройки взаимодействия. Без проводов — соедини сама!',
+    cat: 'ТЕСТЫ',
+    tags: ['test', 'manual'],
+    nodes: [
+      { key: 'Camera', x: 50, y: 150 },
+      { key: 'FaceLandmarker', x: 300, y: 150 },
+      { key: 'InteractionMaster', x: 550, y: 150 },
+      { key: 'UniversalParticles', x: 850, y: 150 },
+      { key: 'FinalCollage', x: 1150, y: 150 },
+    ],
+    wires: [
+      [0, 'video', 1, 'video'],
+      [1, 'video', 2, 'video'],
+      [2, 'video', 3, 'video'],
+      [3, 'video', 4, 'video'],
+      [2, 'followTarget', 3, 'attract_x'], // В UniversalParticles (legacy) attract_x/y
+    ],
+  },
+  // ── ТЕСТЫ: Проверка новых инструментов (авто-сборка) ────────────────
+  {
+    name: '🧪 ТЕСТ: Интерактив (Landmarks)',
+    desc: 'Проверка новых атомарных Landmarker-нод (Лицо, Рука, Тело) в одной цепочке',
+    cat: 'ШОУ',
+    tags: ['new', 'interaction'],
+    nodes: [
+      { key: 'Camera', x: 50, y: 300 },
+      { key: 'FaceLandmarker', x: 300, y: 100 },
+      { key: 'HandLandmarker', x: 550, y: 100 },
+      { key: 'PoseLandmarker', x: 800, y: 100 },
+      { key: 'FinalCollage', x: 1050, y: 300 },
+    ],
+    wires: [
+      [0, 'video', 1, 'video'],
+      [1, 'video', 2, 'video'],
+      [2, 'video', 3, 'video'],
+      [3, 'video', 4, 'video'],
+    ],
+  },
+  {
+    name: '🧘 ТЕСТ: Человек (Holistic)',
+    desc: 'Полное отслеживание: Лицо, Тело и Руки одновременно. Взаимодействие с водой через Мастера.',
+    cat: 'ШОУ',
+    tags: ['new', 'ai', 'holistic'],
+    nodes: [
+      { key: 'Camera', x: 50, y: 300 },
+      { key: 'HolisticLandmarker', x: 350, y: 300 },
+      { key: 'InteractionMaster', x: 600, y: 300 },
+      { key: 'Water', x: 850, y: 300 },
+      { key: 'AudioMaster', x: 350, y: 450 },
+      { key: 'FinalCollage', x: 1100, y: 300 },
+    ],
+    wires: [
+      [0, 'video', 1, 'video'],
+      [1, 'video', 2, 'video'],
+      [1, 'video', 3, 'video'],
+      [1, 'video', 5, 'video'],
+      [2, 'followTarget', 3, 'magicPoint'],
+      [2, 'intensity', 3, 'energy'],
+      [4, 'bass', 3, 'energy'],
+      [3, 'video', 5, 'video']
+    ],
+  },
+  {
+    name: '🌟 ИДЕАЛЬНЫЙ ТЕСТ: Мастер Взаимодействия',
+    desc: 'Хватай частицы рукой (Drag), разводи для размера, хлопай для взрыва!',
+    cat: 'ТЕСТЫ',
+    tags: ['new', 'master'],
+    nodes: [
+      { key: 'Camera', x: 50, y: 200 },
+      { key: 'HandLandmarker', x: 280, y: 200 },
+      { key: 'InteractionMaster', x: 530, y: 200 },
+      { key: 'Particles', x: 780, y: 200 },
+      { key: 'FinalCollage', x: 1050, y: 200 },
+    ],
+    wires: [
+      [0, 'video', 1, 'video'],
+      [1, 'video', 2, 'video'],
+      [2, 'video', 3, 'video'],
+      [3, 'video', 4, 'video'],
+      [2, 'followTarget', 3, 'attract_x'],
+      [2, 'trigger', 3, 'emit'],
+      [2, 'scale', 3, 'size_mod'],
+      [2, 'intensity', 3, 'alpha_mod'],
+    ],
+  },
+
+  {
+    name: '🧪 ТЕСТ: Кибер-детектор',
+    desc: 'Проверка AI-детекции объектов и HUD-отрисовки',
+    cat: 'ТЕСТЫ',
+    tags: ['new', 'ai'],
+    nodes: [
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'CyberDetector', x: 380, y: 200 },
+      { key: 'FinalCollage', x: 660, y: 200 },
+    ],
+    wires: [
+      [0, 'video', 1, 'video'],
+      [1, 'video', 2, 'video'],
+    ],
+  },
+  {
+    name: '✨ МАГИЯ: Полный Контроль',
+    desc: 'Частицы летят за пальцем, Хаос (развод рук) включает Глитч, Рот/Ладонь меняют масштаб.',
+    cat: 'ШОУ',
+    tags: ['magic', 'particles', 'interaction'],
+    nodes: [
+      { key: 'Camera', x: 50, y: 300 },
+      { key: 'FaceLandmarker', x: 300, y: 50 },
+      { key: 'HandLandmarker', x: 300, y: 550 },
+      { key: 'InteractionMaster', x: 600, y: 300 },
+      { key: 'BodyParticles', x: 900, y: 100 },
+      { key: 'Glitch', x: 900, y: 500 },
+      { key: 'FinalCollage', x: 1200, y: 300 },
+    ],
+    wires: [
+      [0, 'video', 1, 'video'],
+      [1, 'video', 2, 'video'],
+      [2, 'video', 3, 'video'],
+
+      [3, 'video', 4, 'video'],
+      [3, 'followTarget', 4, 'attract'],
+
+      [4, 'video', 5, 'video'],
+      [3, 'chaos', 5, 'amount'],
+
+      [5, 'video', 6, 'video'],
+    ],
+  },
+  {
+    name: '🧪 ТЕСТ: Сигналы (Range + Smooth)',
+    desc: 'LFO → Масштаб → Сглаживание → Модуляция эффекта',
+    cat: 'ТЕСТЫ',
+    tags: ['new', 'logic'],
+    nodes: [
+      { key: 'Camera', x: 100, y: 50 },
+      { key: 'LFO', x: 100, y: 240 },
+      { key: 'RangeMapper', x: 360, y: 240 },
+      { key: 'Smoother', x: 620, y: 240 },
+      { key: 'Glitch', x: 400, y: 50 },
+      { key: 'FinalCollage', x: 900, y: 150 },
+    ],
+    wires: [
+      [0, 'video', 4, 'video'],
+      [1, 'val', 2, 'value'],
+      [2, 'result', 3, 'value'],
+      [3, 'value', 4, 'amount'],
+      [4, 'video', 5, 'video'],
+    ],
+  },
+
   // ── НОВИЧКИ: 2-3 ноды, простые связки ──────────────────────────────
   {
     name: '🎥 Камера + Хвост',
     desc: 'Видео с камеры со светящимся следом движений',
     cat: 'НОВИЧКИ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 200 },
-      { key: 'Trailing',     x: 380, y: 200 },
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'Trailing', x: 380, y: 200 },
       { key: 'FinalCollage', x: 660, y: 200 },
     ],
     wires: [[0, 'video', 1, 'video'], [1, 'video', 2, 'video']],
@@ -1140,8 +1385,8 @@ const TEMPLATES = [
     desc: 'Превращает актёра в чёрный силуэт на цветном фоне',
     cat: 'НОВИЧКИ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 200 },
-      { key: 'Silhouette',   x: 380, y: 200 },
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'Silhouette', x: 380, y: 200 },
       { key: 'FinalCollage', x: 660, y: 200 },
     ],
     wires: [[0, 'video', 1, 'video'], [1, 'video', 2, 'video']],
@@ -1151,8 +1396,8 @@ const TEMPLATES = [
     desc: 'Старая VHS-плёнка: царапины, scanlines, виньетка',
     cat: 'НОВИЧКИ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 200 },
-      { key: 'CRT',          x: 380, y: 200 },
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'CRT', x: 380, y: 200 },
       { key: 'FinalCollage', x: 660, y: 200 },
     ],
     wires: [[0, 'video', 1, 'video'], [1, 'video', 2, 'video']],
@@ -1164,14 +1409,14 @@ const TEMPLATES = [
     desc: 'Микрофон → бас раздувает частицы, громкость = масштаб',
     cat: 'АУДИО-РЕАКТИВ',
     nodes: [
-      { key: 'Microphone',   x: 100, y: 100 },
+      { key: 'Microphone', x: 100, y: 100 },
       { key: 'AudioAnalyse', x: 100, y: 280 },
-      { key: 'Particles3D',  x: 380, y: 200 },
+      { key: 'Particles3D', x: 380, y: 200 },
       { key: 'FinalCollage', x: 700, y: 200 },
     ],
     wires: [
       [0, 'audio', 1, 'audio'],
-      [1, 'bass',   2, 'bass'],
+      [1, 'bass', 2, 'bass'],
       [1, 'volume', 2, 'volume'],
       [2, 'video', 3, 'video'],
     ],
@@ -1181,14 +1426,14 @@ const TEMPLATES = [
     desc: 'Шейдер «плазма» дышит на басу музыки',
     cat: 'АУДИО-РЕАКТИВ',
     nodes: [
-      { key: 'Microphone',   x: 100, y: 100 },
+      { key: 'Microphone', x: 100, y: 100 },
       { key: 'AudioAnalyse', x: 100, y: 280 },
       { key: 'ShaderSource', x: 380, y: 200 },
       { key: 'FinalCollage', x: 700, y: 200 },
     ],
     wires: [
       [0, 'audio', 1, 'audio'],
-      [1, 'bass',  2, 'mod'],
+      [1, 'bass', 2, 'mod'],
       [2, 'video', 3, 'video'],
     ],
   },
@@ -1197,17 +1442,17 @@ const TEMPLATES = [
     desc: 'Бит музыки запускает вспышку Glitch',
     cat: 'АУДИО-РЕАКТИВ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 100 },
-      { key: 'Microphone',   x: 100, y: 280 },
+      { key: 'Camera', x: 100, y: 100 },
+      { key: 'Microphone', x: 100, y: 280 },
       { key: 'AudioAnalyse', x: 100, y: 420 },
-      { key: 'Glitch',       x: 380, y: 200 },
+      { key: 'Glitch', x: 380, y: 200 },
       { key: 'FinalCollage', x: 700, y: 200 },
     ],
     wires: [
       [1, 'audio', 2, 'audio'],
       [0, 'video', 3, 'video'],
-      [2, 'bass',  3, 'amount'],
-      [2, 'beat',  3, 'flash'],
+      [2, 'bass', 3, 'amount'],
+      [2, 'beat', 3, 'flash'],
       [3, 'video', 4, 'video'],
     ],
   },
@@ -1216,16 +1461,42 @@ const TEMPLATES = [
     desc: 'Жесты запускают всплывающие слова',
     cat: 'ЖЕСТЫ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 200 },
-      { key: 'HandDetail',   x: 380, y: 200 },
-      { key: 'Bubbles',      x: 660, y: 200 },
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'HandDetail', x: 380, y: 200 },
+      { key: 'Bubbles', x: 660, y: 200 },
       { key: 'FinalCollage', x: 940, y: 200 },
     ],
     wires: [
       [0, 'video', 1, 'video'],
       [1, 'video', 2, 'video'],
-      [1, 'clap',  2, 'trigger'],
+      [1, 'clap', 2, 'trigger'],
       [2, 'video', 3, 'video'],
+    ],
+  },
+  {
+    name: '✨ 3D Magia: Rainbow Soul',
+    desc: 'Флагманское шоу: частицы управляются пальцами, цвет меняется жестами, а бас подрывает галактику!',
+    cat: 'PREMIUM',
+    nodes: [
+      { key: 'Camera', x: 50, y: 300 },
+      { key: 'HandLandmarker', x: 300, y: 300 },
+      { key: 'InteractionMaster', x: 550, y: 300 },
+      { key: 'AudioAnalyse', x: 550, y: 100 },
+      { key: 'UniversalParticles3DV2', x: 800, y: 200, params: { 
+          shape: 'galaxy', count: 8000, speed: 0.8, glow: 0.7, magicTrack: true 
+      } },
+      { key: 'FinalCollage', x: 1100, y: 200 }
+    ],
+    wires: [
+      [0, 'video', 1, 'video'],
+      [1, 'video', 2, 'video'],
+      [1, 'video', 4, 'video'],
+      [1, 'palmPoint', 2, 'followTarget'],
+      [2, 'followTarget', 4, 'magicPoint'],
+      [1, 'color', 2, 'color'],
+      [2, 'color', 4, 'color'],
+      [3, 'bass', 4, 'audio'],
+      [4, 'video', 5, 'video']
     ],
   },
   {
@@ -1233,35 +1504,124 @@ const TEMPLATES = [
     desc: 'Указательный палец рисует, щипок = переключатель кисти',
     cat: 'ЖЕСТЫ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 200 },
-      { key: 'HandDetail',   x: 380, y: 200 },
-      { key: 'Paint',        x: 660, y: 200 },
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'HandLandmarker', x: 380, y: 200 },
+      { key: 'Paint', x: 660, y: 200, params: { mirror: 'off' } },
       { key: 'FinalCollage', x: 940, y: 200 },
     ],
     wires: [
       [0, 'video', 1, 'video'],
       [0, 'video', 2, 'video'],
-      [1, 'x',     2, 'x'],
-      [1, 'y',     2, 'y'],
-      [1, 'draw',  2, 'draw'],
+      [1, 'x', 2, 'x'],
+      [1, 'y', 2, 'y'],
+      [1, 'draw', 2, 'draw'],
       [2, 'video', 3, 'video'],
     ],
+  },
+  {
+    name: '🎯 Палец рисует (Object)',
+    desc: 'Новый способ: один провод от точки руки сразу в ноду Рисования',
+    cat: 'ЖЕСТЫ',
+    nodes: [
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'HandLandmarker', x: 380, y: 200 },
+      { key: 'Paint', x: 660, y: 200, params: { mirror: 'off' } },
+      { key: 'FinalCollage', x: 940, y: 200 },
+    ],
+    wires: [
+      [0, 'video', 1, 'video'],
+      [0, 'video', 2, 'video'],
+      [1, 'indexPoint', 2, 'point'],
+      [1, 'draw', 2, 'draw'],
+      [2, 'video', 3, 'video'],
+    ],
+  },
+  {
+    name: '🌊 Водная Рябь',
+    desc: 'Управление водой жестами и звуком (бас)',
+    cat: 'ЖЕСТЫ',
+    nodes: [
+      { key: 'Camera', x: 50, y: 350 },
+      { key: 'HandLandmarker', x: 260, y: 350 },
+      { key: 'InteractionMaster', x: 470, y: 350 },
+      { key: 'AudioAnalyse', x: 470, y: 150 },
+      { key: 'Water', x: 750, y: 250, params: { 
+          waveHeight: 0.015, waveSpeed: 0.8, reflection: 0.7, 
+          waterColor: '#004488', foamColor: '#ffffff' 
+      } },
+      { key: 'FinalCollage', x: 1000, y: 250 }
+    ],
+    wires: [
+      [0, 'video', 1, 'video'],
+      [1, 'video', 2, 'video'],
+      [1, 'video', 4, 'video'],
+      // Рука -> Мастер (явные соединения)
+      [1, 'palmPoint', 2, 'followTarget'],
+      [1, 'openClose', 2, 'intensity'],
+      [1, 'pinchSpread', 2, 'scale'],
+      // Мастер -> Вода
+      [2, 'followTarget', 4, 'magicPoint'],
+      [2, 'intensity', 4, 'energy'],
+      [2, 'scale', 4, 'waveHeight'],
+      [2, 'speed', 4, 'waveSpeed'],
+      // Остальное
+      [3, 'bass', 4, 'energy'],
+      [3, 'audio', 5, 'audio'],
+      [4, 'video', 5, 'video']
+    ]
   },
   {
     name: '💫 Частицы из тела',
     desc: 'Из суставов вылетают звёзды, хлопок = взрыв',
     cat: 'ЖЕСТЫ',
     nodes: [
-      { key: 'Camera',        x: 100, y: 200 },
-      { key: 'HandDetail',    x: 100, y: 380 },
-      { key: 'BodyParticles', x: 380, y: 200 },
-      { key: 'FinalCollage',  x: 700, y: 200 },
+      { key: 'Camera', x: 50, y: 200 },
+      { key: 'PoseLandmarker', x: 300, y: 100 },
+      { key: 'HandDetail', x: 300, y: 380 },
+      { key: 'BodyParticles', x: 600, y: 200 },
+      { key: 'FinalCollage', x: 900, y: 200 },
     ],
     wires: [
       [0, 'video', 1, 'video'],
-      [0, 'video', 2, 'video'],
-      [1, 'clap',  2, 'burst'],
-      [2, 'video', 3, 'video'],
+      [1, 'video', 3, 'video'],
+      [2, 'clap', 3, 'burst'],
+      [3, 'video', 4, 'video'],
+    ],
+  },
+  {
+    name: '✨ Скульптор Галактики (ШОУ)',
+    desc: '3D Частицы управляются руками. Попробуйте сжать/разжать руки!',
+    cat: 'ШОУ',
+    nodes: [
+      { key: 'Camera', x: 50, y: 350 },
+      { key: 'Microphone', x: 50, y: 100 },
+      { key: 'AudioAnalyse', x: 300, y: 100 },
+      { key: 'HandLandmarker', x: 300, y: 350 },
+      { key: 'InteractionMaster', x: 550, y: 350, params: { autoSearch: false, passthroughRawData: false } },
+      { key: 'UniversalParticles3DV2', x: 850, y: 200, params: { shape: 'galaxy', magicTrack: true, size: 0.1 } },
+      { key: 'Glitch', x: 1150, y: 200, params: { amount: 0 } },
+      { key: 'FinalCollage', x: 1450, y: 350 },
+    ],
+    wires: [
+      [0, 'video', 3, 'video'],
+      [1, 'audio', 2, 'audio'],
+      [3, 'video', 4, 'video'],
+      [4, 'video', 5, 'video'],
+      [5, 'video', 6, 'video'],
+      [6, 'video', 7, 'video'],
+
+      // Взаимодействие (InteractionMaster -> Particles)
+      [4, 'showHide', 5, 'active'],
+      [4, 'scale', 5, 'size'],
+      [4, 'followTarget', 5, 'magicPoint'],
+      [4, 'rotation', 5, 'speed'],
+      [4, 'scatterGather', 5, 'chaos'],
+      [4, 'trigger', 5, 'emit'],
+
+      // Аудио-реактив (AudioAnalyse -> Particles & Glitch)
+      [2, 'bass', 5, 'attractForce'],
+      [2, 'vol', 5, 'glow'],
+      [2, 'beat', 6, 'flash'],
     ],
   },
   {
@@ -1269,9 +1629,9 @@ const TEMPLATES = [
     desc: 'Чем шире улыбаешься — тем больше слово на экране',
     cat: 'ЖЕСТЫ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 200 },
-      { key: 'FaceMimic',    x: 100, y: 380 },
-      { key: 'TextSource',   x: 380, y: 200 },
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'FaceMimic', x: 100, y: 380 },
+      { key: 'TextSource', x: 380, y: 200 },
       { key: 'FinalCollage', x: 700, y: 200 },
     ],
     wires: [
@@ -1287,8 +1647,8 @@ const TEMPLATES = [
     desc: 'Движения горят и преломляются как в калейдоскопе',
     cat: 'БЕЗУМИЕ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 200 },
-      { key: 'Heatmap',      x: 380, y: 200 },
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'Heatmap', x: 380, y: 200 },
       { key: 'Kaleidoscope', x: 660, y: 200 },
       { key: 'FinalCollage', x: 940, y: 200 },
     ],
@@ -1303,9 +1663,9 @@ const TEMPLATES = [
     desc: 'Каждая колонка кадра — другой момент времени',
     cat: 'БЕЗУМИЕ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 200 },
-      { key: 'SlitScan',     x: 380, y: 200 },
-      { key: 'Glow',         x: 660, y: 200 },
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'SlitScan', x: 380, y: 200 },
+      { key: 'Glow', x: 660, y: 200 },
       { key: 'FinalCollage', x: 940, y: 200 },
     ],
     wires: [
@@ -1319,16 +1679,16 @@ const TEMPLATES = [
     desc: 'Звёзды летят с любой скоростью на музыку',
     cat: 'БЕЗУМИЕ',
     nodes: [
-      { key: 'Microphone',   x: 100, y: 100 },
+      { key: 'Microphone', x: 100, y: 100 },
       { key: 'AudioAnalyse', x: 100, y: 280 },
       { key: 'ShaderSource', x: 380, y: 200, params: { preset: 'starfield' } },
-      { key: 'Trailing',     x: 660, y: 200 },
+      { key: 'Trailing', x: 660, y: 200 },
       { key: 'FinalCollage', x: 940, y: 200 },
     ],
     wires: [
       [0, 'audio', 1, 'audio'],
-      [1, 'high',  2, 'mod'],
-      [1, 'beat',  3, 'reset'],
+      [1, 'high', 2, 'mod'],
+      [1, 'beat', 3, 'reset'],
       [2, 'video', 3, 'video'],
       [3, 'video', 4, 'video'],
     ],
@@ -1338,10 +1698,10 @@ const TEMPLATES = [
     desc: 'Камера + калейдоскоп + жидкое искажение поверх',
     cat: 'БЕЗУМИЕ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 200 },
+      { key: 'Camera', x: 100, y: 200 },
       { key: 'Kaleidoscope', x: 380, y: 200 },
-      { key: 'Fluid',        x: 660, y: 200 },
-      { key: 'CRT',          x: 940, y: 200 },
+      { key: 'Fluid', x: 660, y: 200 },
+      { key: 'CRT', x: 940, y: 200 },
       { key: 'FinalCollage', x: 1220, y: 200 },
     ],
     wires: [
@@ -1356,17 +1716,15 @@ const TEMPLATES = [
     desc: 'Хвост + тень = призраки актёра летают за ним',
     cat: 'БЕЗУМИЕ',
     nodes: [
-      { key: 'Camera',       x: 100, y: 200 },
-      { key: 'Silhouette',   x: 380, y: 200, params: { mode: 'shadow' } },
-      { key: 'Trailing',     x: 660, y: 200 },
-      { key: 'Glow',         x: 940, y: 200 },
-      { key: 'FinalCollage', x: 1220, y: 200 },
+      { key: 'Camera', x: 100, y: 200 },
+      { key: 'Silhouette', x: 380, y: 200, params: { mode: 'shadow' } },
+      { key: 'Trailing', x: 660, y: 200 },
+      { key: 'FinalCollage', x: 940, y: 200 },
     ],
     wires: [
       [0, 'video', 1, 'video'],
       [1, 'video', 2, 'video'],
       [2, 'video', 3, 'video'],
-      [3, 'video', 4, 'video'],
     ],
   },
   {
@@ -1374,26 +1732,23 @@ const TEMPLATES = [
     desc: 'Бас → Glitch, биты → вспышка Glow, голос → размер частиц',
     cat: 'БЕЗУМИЕ',
     nodes: [
-      { key: 'Camera',        x: 100, y: 100 },
-      { key: 'Microphone',    x: 100, y: 280 },
-      { key: 'AudioAnalyse',  x: 100, y: 460 },
-      { key: 'Glitch',        x: 380, y: 100 },
-      { key: 'Glow',          x: 660, y: 100 },
+      { key: 'Camera', x: 100, y: 100 },
+      { key: 'Microphone', x: 100, y: 280 },
+      { key: 'AudioAnalyse', x: 100, y: 460 },
+      { key: 'Glitch', x: 380, y: 100 },
       { key: 'BodyParticles', x: 380, y: 360 },
-      { key: 'Mix',           x: 940, y: 200 },
-      { key: 'FinalCollage',  x: 1220, y: 200 },
+      { key: 'Mix', x: 660, y: 200 },
+      { key: 'FinalCollage', x: 940, y: 200 },
     ],
     wires: [
       [1, 'audio', 2, 'audio'],
       [0, 'video', 3, 'video'],
-      [2, 'bass',  3, 'amount'],
-      [3, 'video', 4, 'video'],
-      [2, 'beat',  4, 'flash'],
-      [0, 'video', 5, 'video'],
-      [2, 'vol',   5, 'sizeIn'],
-      [4, 'video', 6, 'video_a'],
-      [5, 'video', 6, 'video_b'],
-      [6, 'video', 7, 'video'],
+      [2, 'bass', 3, 'amount'],
+      [3, 'video', 5, 'video_a'],
+      [0, 'video', 4, 'video'],
+      [2, 'vol', 4, 'sizeIn'],
+      [4, 'video', 5, 'video_b'],
+      [5, 'video', 6, 'video'],
     ],
   },
 
@@ -1403,9 +1758,9 @@ const TEMPLATES = [
     desc: 'Крути ручку — меняется интенсивность глитча. Arduino шлёт число в Serial.',
     cat: 'ЖЕЛЕЗО',
     nodes: [
-      { key: 'SerialIn',     x: 100, y: 100 },
-      { key: 'Camera',       x: 100, y: 320 },
-      { key: 'Glitch',       x: 380, y: 200 },
+      { key: 'SerialIn', x: 100, y: 100 },
+      { key: 'Camera', x: 100, y: 320 },
+      { key: 'Glitch', x: 380, y: 200 },
       { key: 'FinalCollage', x: 660, y: 200 },
     ],
     wires: [
@@ -1419,7 +1774,7 @@ const TEMPLATES = [
     desc: 'Mini DJ-pad: 4 потенциометра управляют 4 параметрами плазмы',
     cat: 'ЖЕЛЕЗО',
     nodes: [
-      { key: 'SerialIn',     x: 100, y: 200 },
+      { key: 'SerialIn', x: 100, y: 200 },
       { key: 'ShaderSource', x: 380, y: 200, params: { preset: 'plasma' } },
       { key: 'FinalCollage', x: 700, y: 200 },
     ],
@@ -1436,9 +1791,9 @@ const TEMPLATES = [
     desc: 'Нажатие кнопки (Serial.println) запускает баббл',
     cat: 'ЖЕЛЕЗО',
     nodes: [
-      { key: 'SerialIn',     x: 100, y: 100 },
-      { key: 'Camera',       x: 100, y: 320 },
-      { key: 'Bubbles',      x: 380, y: 200 },
+      { key: 'SerialIn', x: 100, y: 100 },
+      { key: 'Camera', x: 100, y: 320 },
+      { key: 'Bubbles', x: 380, y: 200 },
       { key: 'FinalCollage', x: 660, y: 200 },
     ],
     wires: [
@@ -1452,14 +1807,14 @@ const TEMPLATES = [
     desc: 'HC-SR04 (ультразвук) → размер облака частиц. Подходи ближе → расходятся',
     cat: 'ЖЕЛЕЗО',
     nodes: [
-      { key: 'SerialIn',     x: 100, y: 100 },
-      { key: 'Booster',      x: 380, y: 100 },
-      { key: 'Particles3D',  x: 660, y: 200 },
+      { key: 'SerialIn', x: 100, y: 100 },
+      { key: 'Booster', x: 380, y: 100 },
+      { key: 'Particles3D', x: 660, y: 200 },
       { key: 'FinalCollage', x: 940, y: 200 },
     ],
     wires: [
       [0, 'slot1', 1, 'signal'],
-      [1, 'out',   2, 'volume'],
+      [1, 'out', 2, 'volume'],
       [2, 'video', 3, 'video'],
     ],
   },
@@ -1468,11 +1823,11 @@ const TEMPLATES = [
     desc: 'USB Serial-режим Flipper. Каждая кнопка переключает эффект через Mix',
     cat: 'ЖЕЛЕЗО',
     nodes: [
-      { key: 'SerialIn',     x: 100, y: 200 },
-      { key: 'Camera',       x: 100, y: 420 },
-      { key: 'Glitch',       x: 380, y: 100 },
-      { key: 'Trailing',     x: 380, y: 320 },
-      { key: 'Mix',          x: 660, y: 200 },
+      { key: 'SerialIn', x: 100, y: 200 },
+      { key: 'Camera', x: 100, y: 420 },
+      { key: 'Glitch', x: 380, y: 100 },
+      { key: 'Trailing', x: 380, y: 320 },
+      { key: 'Mix', x: 660, y: 200 },
       { key: 'FinalCollage', x: 940, y: 200 },
     ],
     wires: [
@@ -1490,16 +1845,16 @@ const TEMPLATES = [
     desc: 'Каждый радио-сигнал = вспышка глитча',
     cat: 'ЖЕЛЕЗО',
     nodes: [
-      { key: 'SerialIn',     x: 100, y: 200 },
-      { key: 'Camera',       x: 100, y: 380 },
-      { key: 'Glitch',       x: 380, y: 200 },
-      { key: 'CRT',          x: 660, y: 200 },
+      { key: 'SerialIn', x: 100, y: 200 },
+      { key: 'Camera', x: 100, y: 380 },
+      { key: 'Glitch', x: 380, y: 200 },
+      { key: 'CRT', x: 660, y: 200 },
       { key: 'FinalCollage', x: 940, y: 200 },
     ],
     wires: [
       [1, 'video', 2, 'video'],
       [0, 'trigger', 2, 'flash'],
-      [0, 'slot1',   2, 'amount'],
+      [0, 'slot1', 2, 'amount'],
       [2, 'video', 3, 'video'],
       [3, 'video', 4, 'video'],
     ],
@@ -1509,7 +1864,7 @@ const TEMPLATES = [
     desc: '4 первых CC = p1..p4 шейдера. APC mini, Launchpad, MIDI-клава',
     cat: 'ЖЕЛЕЗО',
     nodes: [
-      { key: 'MidiInput',    x: 100, y: 200 },
+      { key: 'MidiInput', x: 100, y: 200 },
       { key: 'ShaderSource', x: 380, y: 200, params: { preset: 'kaleidoscope' } },
       { key: 'FinalCollage', x: 700, y: 200 },
     ],
@@ -1526,8 +1881,8 @@ const TEMPLATES = [
     desc: 'GyrOSC / TouchOSC → наклоны телефона крутят 3D-модель',
     cat: 'ЖЕЛЕЗО',
     nodes: [
-      { key: 'OSCIn',        x: 100, y: 200 },
-      { key: 'Source3D',     x: 380, y: 200 },
+      { key: 'OSCIn', x: 100, y: 200 },
+      { key: 'Source3D', x: 380, y: 200 },
       { key: 'FinalCollage', x: 700, y: 200 },
     ],
     wires: [
@@ -1543,14 +1898,14 @@ const TEMPLATES = [
     desc: 'GyrOSC: наклоняешь телефон — частицы крутятся вслед',
     cat: 'iPhone / iPad',
     nodes: [
-      { key: 'OSCIn',         x: 100, y: 200 },
-      { key: 'Particles3D',   x: 380, y: 200 },
-      { key: 'FinalCollage',  x: 720, y: 200 },
+      { key: 'OSCIn', x: 100, y: 200 },
+      { key: 'Particles3D', x: 380, y: 200 },
+      { key: 'FinalCollage', x: 720, y: 200 },
     ],
     wires: [
       [0, 'tilt_x', 1, 'spin_y'],
       [0, 'tilt_y', 1, 'spin_x'],
-      [1, 'video',  2, 'video'],
+      [1, 'video', 2, 'video'],
     ],
   },
   {
@@ -1558,8 +1913,8 @@ const TEMPLATES = [
     desc: 'Сильно тряхнул телефон — на экране всплыло слово',
     cat: 'iPhone / iPad',
     nodes: [
-      { key: 'OSCIn',        x: 100, y: 200 },
-      { key: 'Bubbles',      x: 380, y: 200 },
+      { key: 'OSCIn', x: 100, y: 200 },
+      { key: 'Bubbles', x: 380, y: 200 },
       { key: 'FinalCollage', x: 700, y: 200 },
     ],
     wires: [
@@ -1586,9 +1941,9 @@ const TEMPLATES = [
     desc: 'Шли с TouchOSC на /1 /2 /3 /4 → управляешь 4 параметрами шейдера',
     cat: 'iPhone / iPad',
     nodes: [
-      { key: 'OSCIn',         x: 100, y: 200 },
-      { key: 'ShaderSource',  x: 380, y: 200 },
-      { key: 'FinalCollage',  x: 720, y: 200 },
+      { key: 'OSCIn', x: 100, y: 200 },
+      { key: 'ShaderSource', x: 380, y: 200 },
+      { key: 'FinalCollage', x: 720, y: 200 },
     ],
     wires: [
       [0, 'slot1', 1, 'p1'],
@@ -1603,10 +1958,10 @@ const TEMPLATES = [
     desc: 'iPad с Tagtool через NDI → стилизация SVG-узором. Без интернета, без ключей.',
     cat: 'iPhone / iPad',
     nodes: [
-      { key: 'IPhoneCamera',  x: 100, y: 100 },
-      { key: 'SvgSource',     x: 100, y: 360 },
+      { key: 'IPhoneCamera', x: 100, y: 100 },
+      { key: 'SvgSource', x: 100, y: 360 },
       { key: 'StyleTransfer', x: 420, y: 200 },
-      { key: 'FinalCollage',  x: 760, y: 200 },
+      { key: 'FinalCollage', x: 760, y: 200 },
     ],
     wires: [
       [0, 'video', 2, 'video'],
@@ -1620,7 +1975,7 @@ const TEMPLATES = [
     cat: 'iPhone / iPad',
     nodes: [
       { key: 'IPhoneCamera', x: 100, y: 200 },
-      { key: 'AIApi',        x: 380, y: 200 },
+      { key: 'AIApi', x: 380, y: 200 },
       { key: 'FinalCollage', x: 720, y: 200 },
     ],
     wires: [
@@ -1634,15 +1989,15 @@ const TEMPLATES = [
     cat: 'iPhone / iPad',
     nodes: [
       { key: 'IPhoneCamera', x: 100, y: 100 },
-      { key: 'OSCIn',        x: 100, y: 360 },
+      { key: 'OSCIn', x: 100, y: 360 },
       { key: 'Kaleidoscope', x: 400, y: 200 },
       { key: 'FinalCollage', x: 720, y: 200 },
     ],
     wires: [
-      [0, 'video',  2, 'video'],
+      [0, 'video', 2, 'video'],
       [1, 'tilt_x', 2, 'p2'],
       [1, 'tilt_y', 2, 'p1'],
-      [2, 'video',  3, 'video'],
+      [2, 'video', 3, 'video'],
     ],
   },
 ];
@@ -1679,7 +2034,7 @@ function graphToTemplate(name, desc, tags = []) {
     })),
     wires: state.wires.map((w) => [
       idToIdx.get(w.from), w.fromName,
-      idToIdx.get(w.to),   w.toName,
+      idToIdx.get(w.to), w.toName,
     ]),
   };
 }
@@ -1689,9 +2044,9 @@ function parseTags(str) {
   if (!str) return [];
   return [...new Set(
     str.toLowerCase()
-       .split(/[,\s]+/)
-       .map((t) => t.replace(/^#+/, '').trim())
-       .filter((t) => t.length > 0 && t.length < 30)
+      .split(/[,\s]+/)
+      .map((t) => t.replace(/^#+/, '').trim())
+      .filter((t) => t.length > 0 && t.length < 30)
   )];
 }
 
@@ -1734,23 +2089,35 @@ cookbookAddBtn?.addEventListener('click', () => {
 });
 
 function applyTemplate(tpl) {
+  console.log('Applying template:', tpl.name, tpl);
+  
+  // Принудительно закрываем окно шаблонов
+  const overlays = document.querySelectorAll('.templates-overlay');
+  overlays.forEach(ov => ov.remove());
+
   // Очищаем перед применением
-  for (const n of [...nodes.values()]) try { n.destroy?.(); } catch {}
+  for (const n of [...nodes.values()]) try { n.destroy?.(); } catch { }
   nodes.clear();
   dock.querySelectorAll('.node').forEach((el) => el.remove());
   clearAllWires();
 
   suspendHistory = true;
   const created = [];
-  for (const ns of tpl.nodes) {
-    const n = createNode(ns.key, { x: ns.x, y: ns.y });
-    if (n && ns.params) n.applyParams?.(ns.params);
-    created.push(n);
+  try {
+    for (const ns of tpl.nodes) {
+      const n = createNode(ns.key, { x: ns.x, y: ns.y });
+      if (n && ns.params) n.applyParams?.(ns.params);
+      created.push(n);
+    }
+    for (const [fIdx, fName, tIdx, tName] of tpl.wires) {
+      const f = created[fIdx]?.id, t = created[tIdx]?.id;
+      if (f && t) addWireProgrammatic(f, fName, t, tName);
+    }
+    console.log('Template wires connected:', tpl.wires.length);
+  } catch (err) {
+    console.error('Failed to apply template:', err);
   }
-  for (const [fIdx, fName, tIdx, tName] of tpl.wires) {
-    const f = created[fIdx]?.id, t = created[tIdx]?.id;
-    if (f && t) addWireProgrammatic(f, fName, t, tName);
-  }
+  
   suspendHistory = false;
   pushHistory();
   toast(`📚 «${tpl.name}» — поехали!`);
@@ -1758,6 +2125,9 @@ function applyTemplate(tpl) {
 
 const templatesBtn = document.getElementById('templates-btn');
 templatesBtn?.addEventListener('click', () => {
+  const existing = document.querySelector('.templates-overlay');
+  if (existing) { existing.remove(); return; }
+
   // Простая модалка-список
   const overlay = document.createElement('div');
   overlay.className = 'templates-overlay';
@@ -1772,7 +2142,7 @@ templatesBtn?.addEventListener('click', () => {
       <div class="templates-hint">${t('templates.hint')}</div>
     </div>
   `;
-  const list    = overlay.querySelector('.templates-list');
+  const list = overlay.querySelector('.templates-list');
   const tagsBar = overlay.querySelector('.tpl-tags');
 
   // Пользовательские шаблоны — первые
@@ -1897,7 +2267,6 @@ templatesBtn?.addEventListener('click', () => {
 });
 
 // ── Состояние графа ─────────────────────────────────────────────────────
-const nodes = new Map(); // id → Node-instance
 
 function createNode(typeName, pos) {
   const entry = getRegistry().get(typeName);
@@ -2034,7 +2403,7 @@ window.addEventListener('resize', fitStage);
     if (!typeName) return null;
     const newN = createNode(typeName, { x: n.x + 30, y: n.y + 30 });
     if (newN) {
-      try { newN.applyParams?.({ ...(n.params || {}) }); } catch {}
+      try { newN.applyParams?.({ ...(n.params || {}) }); } catch { }
       // Перенесём прозрачность/слой
       if (typeof n.outputAlpha === 'number') {
         newN.outputAlpha = n.outputAlpha;
@@ -2072,8 +2441,8 @@ window.addEventListener('resize', fitStage);
     document.body.appendChild(menuEl);
     // Не выходить за экран
     const r = menuEl.getBoundingClientRect();
-    if (r.right > window.innerWidth)  menuEl.style.left = (window.innerWidth - r.width - 8) + 'px';
-    if (r.bottom > window.innerHeight) menuEl.style.top  = (window.innerHeight - r.height - 8) + 'px';
+    if (r.right > window.innerWidth) menuEl.style.left = (window.innerWidth - r.width - 8) + 'px';
+    if (r.bottom > window.innerHeight) menuEl.style.top = (window.innerHeight - r.height - 8) + 'px';
   }
   document.addEventListener('contextmenu', (e) => {
     // 1) ПКМ на слайдере с data-pname → MIDI Learn меню
@@ -2086,14 +2455,18 @@ window.addEventListener('resize', fitStage);
         const pname = slider.dataset.pname;
         const nodeId = nodeEl.dataset.nodeId;
         const lbl = slider.parentElement?.querySelector('.param-head')?.textContent
-                    || slider.closest('.param')?.querySelector('.param-head')?.textContent
-                    || pname;
+          || slider.closest('.param')?.querySelector('.param-head')?.textContent
+          || pname;
         const has = window.__midiLearn?.has(nodeId, pname);
         showMenu(e.clientX, e.clientY, [
-          { icon: '🎹', label: has ? 'Перевыучить MIDI' : 'MIDI Learn — крутни ручку',
-            action: () => window.__midiLearn?.start(slider, nodeId, pname, lbl) },
-          ...(has ? [{ icon: '🗑', label: 'Забыть MIDI',
-            action: () => window.__midiLearn?.forget(nodeId, pname) }] : []),
+          {
+            icon: '🎹', label: has ? 'Перевыучить MIDI' : 'MIDI Learn — крутни ручку',
+            action: () => window.__midiLearn?.start(slider, nodeId, pname, lbl)
+          },
+          ...(has ? [{
+            icon: '🗑', label: 'Забыть MIDI',
+            action: () => window.__midiLearn?.forget(nodeId, pname)
+          }] : []),
         ]);
         return;
       }
@@ -2109,14 +2482,16 @@ window.addEventListener('resize', fitStage);
     e.stopPropagation();
     showMenu(e.clientX, e.clientY, [
       { icon: '🗐', label: 'Дублировать', kbd: 'Cmd+D', action: () => duplicateNode(n) },
-      { icon: '✏️', label: 'Переименовать', action: () => {
-        const cur = nodeEl.querySelector('.node-name')?.textContent || '';
-        const next = prompt('Имя ноды:', cur);
-        if (next != null && next.trim()) {
-          const t = nodeEl.querySelector('.node-name');
-          if (t) t.textContent = next.trim();
+      {
+        icon: '✏️', label: 'Переименовать', action: () => {
+          const cur = nodeEl.querySelector('.node-name')?.textContent || '';
+          const next = prompt('Имя ноды:', cur);
+          if (next != null && next.trim()) {
+            const t = nodeEl.querySelector('.node-name');
+            if (t) t.textContent = next.trim();
+          }
         }
-      } },
+      },
       { sep: true },
       { icon: '🗑', label: 'Удалить', kbd: 'Backspace', action: () => n.remove?.() },
     ]);
@@ -2178,7 +2553,7 @@ const selectedNodes = new Set();
       const nr = n.el?.getBoundingClientRect();
       if (!nr) continue;
       const inside = nr.right > r.left && nr.left < r.right
-                  && nr.bottom > r.top && nr.top < r.bottom;
+        && nr.bottom > r.top && nr.top < r.bottom;
       if (inside) {
         selectedNodes.add(n.id);
         n.el.classList.add('selected');
@@ -2247,15 +2622,15 @@ const selectedNodes = new Set();
       // Лимит ~50 записей чтобы localStorage не разбух
       if (arr.length > 50) arr.length = 50;
       localStorage.setItem(FB_KEY, JSON.stringify(arr));
-    } catch {}
+    } catch { }
   }
 
   function snapshotMeta() {
     const ua = navigator.userAgent;
-    const isIPad  = /iPad|Macintosh.*Mobile/.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
+    const isIPad = /iPad|Macintosh.*Mobile/.test(ua) || (navigator.maxTouchPoints > 1 && /Macintosh/.test(ua));
     const isIPhone = /iPhone/.test(ua);
-    const isMac   = /Macintosh/.test(ua) && !isIPad;
-    const isWin   = /Windows/.test(ua);
+    const isMac = /Macintosh/.test(ua) && !isIPad;
+    const isWin = /Windows/.test(ua);
     const isAndroid = /Android/.test(ua);
     const device = isIPad ? 'iPad' : isIPhone ? 'iPhone' : isAndroid ? 'Android' : isMac ? 'Mac' : isWin ? 'Windows' : 'Other';
     return {
@@ -2306,7 +2681,7 @@ const selectedNodes = new Set();
 
     overlay.querySelector('.fb-send').addEventListener('click', () => {
       const name = overlay.querySelector('[data-f="name"]').value.trim();
-      const msg  = overlay.querySelector('[data-f="msg"]').value.trim();
+      const msg = overlay.querySelector('[data-f="msg"]').value.trim();
       if (!msg) {
         overlay.querySelector('[data-f="msg"]').focus();
         return;
@@ -2340,7 +2715,7 @@ const selectedNodes = new Set();
         }).catch(() => { window.location.href = mailto; });
       } else {
         // Копируем в буфер на случай если почта не настроена
-        try { navigator.clipboard?.writeText(body); } catch {}
+        try { navigator.clipboard?.writeText(body); } catch { }
         window.location.href = mailto;
       }
 
@@ -2380,7 +2755,7 @@ const selectedNodes = new Set();
     pressTimer = setTimeout(() => {
       if (!pressTarget) return;
       // Лёгкая тактильная подсказка (где доступна)
-      try { navigator.vibrate?.(20); } catch {}
+      try { navigator.vibrate?.(20); } catch { }
       const ev = new PointerEvent('contextmenu', {
         bubbles: true, cancelable: true,
         clientX: pressX, clientY: pressY,
@@ -2454,32 +2829,18 @@ const selectedNodes = new Set();
   });
 }
 
-// Кнопки
-clearBtn.addEventListener('click', () => {
-  if (!confirm('Очистить весь холст?')) return;
-  // Корректное удаление: destroy ноды (камеры/микрофоны отключаются),
-  // элементы из DOM, провода, рамки-комментарии, автосейв.
-  for (const n of [...nodes.values()]) {
-    try { n.destroy?.(); } catch {}
-  }
-  nodes.clear();
-  dock.querySelectorAll('.node').forEach((el) => el.remove());
-  dock.querySelectorAll('.frame').forEach((el) => el.remove());
-  clearAllWires();
-  // Удаляем автосейв, чтобы он не «возвращался» после перезагрузки
-  try { localStorage.removeItem('dasho.autosave'); } catch {}
-  // Сцены 1–9 НЕ трогаем — это твои сохранённые шоу. Чтобы их стереть,
-  // используй кнопку 🗑 в плашке сцен снизу.
-  toast('🗑 холст очищен (сцены 1-9 сохранены)');
-});
 
 fsBtn.addEventListener('click', () => {
   if (document.fullscreenElement) document.exitFullscreen();
-  else document.documentElement.requestFullscreen().catch(() => {});
+  else document.documentElement.requestFullscreen().catch(() => { });
 });
 
 document.addEventListener('node-removed', (e) => {
-  nodes.delete(e.detail.id);
+  const node = nodes.get(e.detail.id);
+  if (node) {
+    if (typeof node.destroy === 'function') node.destroy();
+    nodes.delete(e.detail.id);
+  }
 });
 
 // Тестовый API — позволяет прогонять автотесты, минуя клики мышкой.
@@ -2497,11 +2858,19 @@ _tryLoadFromUrl().then((loaded) => {
   if (loaded) return;
   const W = window.innerWidth;
   const H = window.innerHeight;
-  const camX = Math.max(40, Math.round(W * 0.18));
-  const finX = Math.max(camX + 220, Math.round(W * 0.55));
-  const y   = Math.max(40, Math.round(H * 0.30));
-  createNode('Camera',       { x: camX, y });
-  createNode('FinalCollage', { x: finX, y });
+  const y = Math.max(40, Math.round(H * 0.25));
+  const stepX = 260;
+
+  // Базовая начальная загрузка (только камера и коллаж)
+  const cam = createNode('Camera', { x: 40, y });
+  const fin = createNode('FinalCollage', { x: 40 + stepX * 2, y });
+
+  // Автоматически соединяем их через небольшую паузу
+  setTimeout(() => {
+    import('./wires.js').then(({ addWireProgrammatic }) => {
+      addWireProgrammatic(cam.id, 'video', fin.id, 'video');
+    });
+  }, 100);
 }).then(ensureMobilePlayShare);
 
 // На mobile/iPad — вертикальная sticker-кнопка «play node» слева сбоку.
@@ -2539,7 +2908,7 @@ function _playTick() {
   if (_playCanvas.width !== w || _playCanvas.height !== h) {
     _playCanvas.width = w; _playCanvas.height = h;
   }
-  try { _playCtx.drawImage(out, 0, 0, w, h); } catch {}
+  try { _playCtx.drawImage(out, 0, 0, w, h); } catch { }
 }
 
 function openPlayNodeSheet() {
@@ -2641,7 +3010,7 @@ async function _playAirPlay() {
     if (!_playStream && _playCanvas.captureStream) {
       _playStream = _playCanvas.captureStream(30);
       _playStreamVideo.srcObject = _playStream;
-      await _playStreamVideo.play().catch(() => {});
+      await _playStreamVideo.play().catch(() => { });
     }
     if (_playStreamVideo.webkitShowPlaybackTargetPicker) {
       _playStreamVideo.webkitShowPlaybackTargetPicker();
@@ -2708,6 +3077,9 @@ const tickCtx = {
       return { value, sourceNode };
     });
   },
+  isOutputConnected(nodeId, outputName) {
+    return getConnections().some((c) => c.fromNodeId === nodeId && c.fromName === outputName);
+  },
 };
 
 function fitStage() {
@@ -2719,10 +3091,10 @@ function fitStage() {
 }
 
 // ── Статус-бар ──────────────────────────────────────────────────────────
-const sbFps    = document.getElementById('status-fps');
-const sbNodes  = document.getElementById('status-nodes');
-const sbWires  = document.getElementById('status-wires');
-const sbList   = document.getElementById('status-list');
+const sbFps = document.getElementById('status-fps');
+const sbNodes = document.getElementById('status-nodes');
+const sbWires = document.getElementById('status-wires');
+const sbList = document.getElementById('status-list');
 let _frameCount = 0;
 let _lastFpsUpdate = performance.now();
 let _currentFps = 0;
@@ -2730,7 +3102,7 @@ let _currentFps = 0;
 function updateStatusBar() {
   if (sbNodes) sbNodes.textContent = `${nodes.size} нод`;
   if (sbWires) sbWires.textContent = `${getConnections().length} проводов`;
-  if (sbFps)   sbFps.textContent   = `${_currentFps.toFixed(0)} fps`;
+  if (sbFps) sbFps.textContent = `${_currentFps.toFixed(0)} fps`;
   if (sbList) {
     // Активные источники (Camera идёт, Microphone идёт, MediaPipe готов и т.п.)
     const items = [];
@@ -2772,7 +3144,7 @@ function tickFrame() {
         }
       }
       // Авто-обновление мини-превью внутри ноды (если есть)
-      try { n._updatePreview?.(); } catch {}
+      try { n._updatePreview?.(); } catch { }
 
       // Индикатор «LIVE»: нода активна если подключена + есть реальный сигнал
       const wasActive = n._wasActive || false;
@@ -2809,7 +3181,7 @@ function tickFrame() {
         for (const sock of socks) {
           const name = sock.dataset.name;
           let v;
-          try { v = n.getOutput?.(name); } catch {}
+          try { v = n.getOutput?.(name); } catch { }
           let live = false;
           if (typeof v === 'number') live = Math.abs(v) > 0.001;
           else if (typeof v === 'boolean') live = v;
@@ -2821,7 +3193,7 @@ function tickFrame() {
     }
 
     // ── play node — копируем выбранный source в _playCanvas (для AirPlay/share) ──
-    try { _playTick(); } catch {}
+    try { _playTick(); } catch { }
 
     // ── Master Fade overlay (всё в чёрный) ──
     const fadeEl = document.getElementById('master-fade');
@@ -2881,27 +3253,13 @@ function rafLoop(t) {
 }
 requestAnimationFrame(rafLoop);
 
-// Fallback через MessageChannel — единственный way получить высокочастотные
-// тики в скрытой вкладке (setInterval/setTimeout drosselируются до 1/сек).
-// Это нужно когда пользователь выводит финальный коллаж на проектор fullscreen
-// и оставляет основной браузер свёрнутым.
-//
-// Уважаем целевой fps: если RAF уже отрисовал недавно — fallback не вмешивается.
-// Активная вкладка → RAF делает свою работу, fallback почти всегда пропускает.
-// Свёрнутая вкладка → RAF замораживается, fallback берёт управление.
-{
-  const ch = new MessageChannel();
-  ch.port1.onmessage = () => {
-    // В активной (видимой) вкладке RAF справляется сам и уважает fps —
-    // fallback не должен рисовать параллельно (иначе суммарно 2x кадров).
-    // Активируется только когда вкладка скрыта.
-    if (document.visibilityState !== 'hidden') {
-      ch.port2.postMessage(0);
-      return;
-    }
-    const minMs = _targetFps > 0 ? (1000 / _targetFps - 1) : 16;
-    if (performance.now() - _lastTickAt > minMs) tickFrame();
-    ch.port2.postMessage(0);
-  };
-  ch.port2.postMessage(0);
-}
+// Fallback для скрытой вкладки: когда пользователь выводит коллаж на проектор
+// и сворачивает основной браузер, RAF замораживается. setInterval тоже
+// дросселируется до ~1/сек, но этого достаточно чтобы шоу не замерло полностью.
+// Используем setInterval вместо MessageChannel чтобы не создавать busy-loop
+// (MessageChannel крутил тысячи сообщений в секунду и сжирал память за ~5 мин).
+setInterval(() => {
+  if (document.visibilityState !== 'hidden') return;
+  const minMs = _targetFps > 0 ? (1000 / _targetFps - 1) : 33;
+  if (performance.now() - _lastTickAt > minMs) tickFrame();
+}, 33);

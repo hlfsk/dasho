@@ -428,8 +428,6 @@ button:active { transform: translateY(0); }
     letter-spacing: 0.18em;
   }
   #master-fade {
-    -webkit-appearance: slider-vertical;
-    appearance: slider-vertical;
     writing-mode: vertical-lr;
     direction: rtl;
     width: 6px !important;
@@ -1357,21 +1355,28 @@ details.node[open] .node-arrow { transform: rotate(180deg); }
    триггер — красный  #ff4d2e
 */
 .socket {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border: 2px solid rgba(10, 10, 20, 0.95);
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  z-index: 3;
-  pointer-events: auto;
+  background: #333;
+  border: 1.5px solid rgba(255,255,255,0.3);
   cursor: crosshair;
-  transition: box-shadow 0.12s, transform 0.12s;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
+  position: absolute;
+  z-index: 100; /* Всегда сверху */
+  transition: transform 0.1s;
 }
-.socket:hover {
-  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.22), 0 0 6px rgba(0, 0, 0, 0.4);
-  z-index: 4;
-  transform: scale(1.2);
+/* Увеличиваем область захвата для удобства */
+.socket::after {
+  content: '';
+  position: absolute;
+  top: -6px; left: -6px; right: -6px; bottom: -6px;
+  border-radius: 50%;
+}
+.param-head, .param-value, .layer-label, .layer-num {
+  pointer-events: none; /* Чтобы не мешали кликать по сокету */
+}
+.param-select, .param-toggle input, .node-btn, .blend-select, input[type="range"], input[type="color"] {
+  pointer-events: auto; /* Возвращаем кликабельность инпутам */
 }
 /* Положение: вход слева, выход справа */
 .socket-in  { left: -8px; }
@@ -1574,10 +1579,10 @@ body.projector-mode #stream-btn { display: none !important; }
 
 /* Сворачиваемые группы внутри ноды */
 .group-header {
-  font-size: 0.55rem;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  opacity: 0.7;
+  color: var(--cat-color, var(--yellow));
   font-weight: 700;
   margin: 0.4rem 0 0.1rem;
   padding: 0.3rem 0.3rem 0.05rem;
@@ -1622,8 +1627,9 @@ body.projector-mode #stream-btn { display: none !important; }
 /* Цвета по типу */
 .socket[data-type="video"]   { background: var(--green); }    /* жёлтый */
 .socket[data-type="audio"]   { background: var(--blue); }     /* бирюзовый */
-.socket[data-type="number"]  { background: var(--lavender); } /* лавандовый — НЕ как video! */
+.socket[data-type="number"]  { background: var(--lavender); } /* лавандовый */
 .socket[data-type="trigger"] { background: var(--red); }      /* оранж */
+.socket[data-type="color"]   { background: #a855f7; }      /* сиреневый */
 
 /* ── Цвет рамки ноды по категории ──────────────────────────────────────── */
 /* Каждой ноде задаём CSS-переменную --cat-color — она используется и в
@@ -1719,11 +1725,13 @@ body.projector-mode #stream-btn { display: none !important; }
 .row .socket-out { right: -1.6rem; }
 
 .row-label {
-  font-size: 0.72rem;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  opacity: 0.65;
+  color: #ffffff;
   font-weight: 600;
+  padding-left: 4px;
+  margin-bottom: 1px;
 }
 
 /* ── Слайдер (универсальный, единственный способ ввода чисел) ──────────── */
@@ -1731,15 +1739,25 @@ body.projector-mode #stream-btn { display: none !important; }
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  position: relative;
+}
+.param > .socket {
+  position: absolute;
+  left: -10px;
+  top: 72%;
+  transform: translateY(-50%);
+  z-index: 10;
 }
 .param-head {
   display: flex;
   justify-content: space-between;
-  font-size: 0.7rem;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  opacity: 0.65;
+  color: #ffffff;
   font-weight: 600;
+  padding-left: 4px;
+  margin-bottom: 3px;
 }
 .param-value {
   font-variant-numeric: tabular-nums;

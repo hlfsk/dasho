@@ -12,7 +12,10 @@ export class AudioAnalyseNode extends Node {
 
   constructor(opts) {
     super(opts);
-    this.inputs = [{ name: 'audio', type: 'audio', label: 'звук' }];
+    this.inputs = [
+      { name: 'audio',    type: 'audio',   label: 'звук' },
+      { name: 'beatSens', type: 'number',  label: 'чувств. бита мод.' },
+    ];
     this.outputs = [
       { name: 'vol',  type: 'number',  label: 'громкость' },
       { name: 'bass', type: 'number',  label: 'бас' },
@@ -37,7 +40,8 @@ export class AudioAnalyseNode extends Node {
   }
 
   init() {
-    // Метры по каждому диапазону — наглядно для подростков
+    this.moveSocketsToParams();
+    // Метры по каждому диапазону
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;flex-direction:column;gap:0.25rem;margin-top:0.4rem';
     const rows = ['vol', 'bass', 'mid', 'high'];
@@ -113,7 +117,8 @@ export class AudioAnalyseNode extends Node {
     for (const x of this._beatHistory) avg += x;
     avg /= this._beatHistory.length || 1;
     const now = performance.now();
-    const sens = this.params.beatSens ?? 0.4;
+    const sensMod = ctx.getInputValues(this.id, 'beatSens')[0];
+    const sens = sensMod ?? (this.params.beatSens ?? 0.4);
     let beat = false;
     if (low > sens && low > avg * 1.4 && now - this._lastBeatAt > 200) {
       this._lastBeatAt = now;

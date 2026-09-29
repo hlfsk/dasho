@@ -24,9 +24,9 @@ async function loadThree() {
 }
 
 export class Particles3DNode extends Node {
-  static title = '3D-частицы';
+  static title = '3D-частицы (legacy)';
   static icon = '🌌';
-  static category = 'effects';
+  static category = 'hidden';
 
   constructor(opts) {
     super(opts);
@@ -71,7 +71,7 @@ export class Particles3DNode extends Node {
         ],
         group: 'ВНЕШНИЙ ВИД' },
       { kind: 'slider', name: 'size', label: 'размер частицы',
-        min: 0.01, max: 0.5, step: 0.005, default: 0.06,
+        min: 0.001, max: 2.0, step: 0.005, default: 0.06,
         format: (v) => Number(v).toFixed(3),
         group: 'ВНЕШНИЙ ВИД' },
       // КОЛИЧЕСТВО И РАЗМАХ
@@ -92,8 +92,8 @@ export class Particles3DNode extends Node {
     this.collapsedByDefault = new Set(['КОЛИЧЕСТВО И РАЗМАХ', 'ДВИЖЕНИЕ']);
 
     this.canvas = document.createElement('canvas');
-    this.canvas.width = 1024;
-    this.canvas.height = 576;
+    this.canvas.width = 1280;
+    this.canvas.height = 720;
     this._three = null;
     this._scene = null;
     this._camera = null;
