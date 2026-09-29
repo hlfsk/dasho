@@ -64,7 +64,18 @@ export class Node {
   init() {}             // вызывается ОДИН РАЗ после mount
   tick(ctx) {}          // каждый кадр; ctx даёт getInputValue(name)
   destroy() {}          // при удалении ноды
-  getOutput(name) { return null; } // какое значение отдать на выход
+  /**
+   * Получает значение для указанного выходного порта.
+   * @param {string} name - Имя выходного поля (e.g., 'value', 'color').
+   * @returns {any | null} Значение параметра или null, если поле не существует.
+   */
+  getOutput(name) { 
+    const param = this.params[name];
+    if (!param && !this.typeLabels.some(label => label.includes(name))) {
+        return null; // Поле не определено ни в параметрах, ни в лейблах
+    }
+    return param; 
+  }
 
   // ── DOM-сборка ──
   mount(parent) {
